@@ -1,0 +1,487 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Users, MapPin, CheckCircle, Circle, X, Printer, UserCheck, LayoutGrid } from 'lucide-react';
+
+// -----------------------------------------------------------------------------
+// 賓客名單數據 (Guest Data)
+// 資料來源: list.pdf
+// 1號: 主家席, 2號: 男方長輩, 3號: 女方長輩
+// 左邊 (單數): 女方親友, 右邊 (雙數): 男方親友
+// -----------------------------------------------------------------------------
+const TABLE_DATA = [
+  // --- 主舞台區 ---
+  { 
+    id: 1, label: "1", type: "rect", side: "VIP", category: "主家席 (Head Table)", 
+    guests: [
+      { id: "1-1", name: "新郎 & 新娘 (Bride & Groom)", checked: false },
+      { id: "1-2", name: "姨媽 (4位)", checked: false },
+      { id: "1-3", name: "我媽 (Mom)", checked: false },
+      { id: "1-4", name: "我 (2位)", checked: false },
+      { id: "1-5", name: "生 (2位)", checked: false },
+      { id: "1-6", name: "表姨 (6位)", checked: false },
+      { id: "1-7", name: "新 胡生 (3位)", checked: false },
+      { id: "1-8", name: "永高老报 (2位)", checked: false }
+    ]
+  },
+  
+  // --- 長輩席 ---
+  { 
+    id: 3, label: "3", type: "round", side: "Bride", category: "女方長輩 (GE FAM)", 
+    guests: [
+      { id: "3-1", name: "GE FAM 親友團 (12位)", checked: false },
+      { id: "3-2", name: "女方親戚 (Relatives)", checked: false }
+    ]
+  },
+  { 
+    id: 2, label: "2", type: "round", side: "Groom", category: "男方長輩 (SH FAM)", 
+    guests: [
+      { id: "2-1", name: "SH FAM 2 親友團 (12位)", checked: false },
+      { id: "2-2", name: "男方親戚 (Relatives)", checked: false }
+    ]
+  },
+
+  // --- 男方 (右邊 - 雙數) ---
+  { 
+    id: 4, label: "4", type: "round", side: "Groom", category: "男方親友 (FAM 4)", 
+    guests: [
+      { id: "4-1", name: "Roberto (2位)", checked: false },
+      { id: "4-2", name: "吳總 (2位)", checked: false },
+      { id: "4-3", name: "徐生 (1位)", checked: false },
+      { id: "4-4", name: "印尼肥仔 (5位)", checked: false },
+      { id: "4-5", name: "深圳徐總", checked: false },
+      { id: "4-6", name: "深圳Jimmy", checked: false }
+    ]
+  },
+  { 
+    id: 6, label: "6", type: "round", side: "Groom", category: "男方親友 (FAM 5)", 
+    guests: [
+      { id: "6-1", name: "大眼仔 (2位)", checked: false },
+      { id: "6-2", name: "4.1 (1位)", checked: false },
+      { id: "6-3", name: "陳凱韋 (1位)", checked: false },
+      { id: "6-4", name: "黃國 (2位)", checked: false },
+      { id: "6-5", name: "發 (2位)", checked: false }
+    ]
+  },
+  { 
+    id: 8, label: "8", type: "round", side: "Groom", category: "男方同事 (FAM 6)", 
+    guests: [
+      { id: "8-1", name: "昌 Jason (1位)", checked: false },
+      { id: "8-2", name: "遠大 William (1位)", checked: false },
+      { id: "8-3", name: "匯泉 (2位)", checked: false },
+      { id: "8-4", name: "公司 (3位)", checked: false },
+      { id: "8-5", name: "柜林生 (2位)", checked: false },
+      { id: "8-6", name: "劉总 (2位)", checked: false },
+      { id: "8-7", name: "Lala (1位)", checked: false }
+    ]
+  },
+  { 
+    id: 10, label: "10", type: "round", side: "Groom", category: "中學同學 (Group 4)", 
+    guests: [
+      { id: "10-1", name: "Phoebe", checked: false },
+      { id: "10-2", name: "Ting", checked: false },
+      { id: "10-3", name: "Chris", checked: false },
+      { id: "10-4", name: "Siann", checked: false },
+      { id: "10-5", name: "Mirror", checked: false },
+      { id: "10-6", name: "KC", checked: false },
+      { id: "10-7", name: "Bakmo", checked: false },
+      { id: "10-8", name: "Sherman", checked: false },
+      { id: "10-9", name: "Wilson", checked: false },
+      { id: "10-10", name: "Andy", checked: false },
+      { id: "10-11", name: "Anthony", checked: false },
+      { id: "10-12", name: "Justin", checked: false }
+    ]
+  },
+  { 
+    id: 12, label: "12", type: "round", side: "Groom", category: "親友 (Group 2)", 
+    guests: [
+      { id: "12-1", name: "暢 (新郎兒子)", checked: false },
+      { id: "12-2", name: "婦科", checked: false },
+      { id: "12-3", name: "Harry (3位)", checked: false },
+      { id: "12-4", name: "林綺婷 (1位)", checked: false },
+      { id: "12-5", name: "Scott (1位)", checked: false },
+      { id: "12-6", name: "Dicky Cheung (2位)", checked: false },
+      { id: "12-7", name: "老黑", checked: false },
+      { id: "12-8", name: "任旭陽", checked: false },
+      { id: "12-9", name: "Rannie Yu", checked: false }
+    ]
+  },
+  { 
+    id: 14, label: "14", type: "round", side: "Groom", category: "男方親友 (FAM 2/3)", 
+    guests: [
+      { id: "14-1", name: "文昭 (2位)", checked: false },
+      { id: "14-2", name: "强 (2位)", checked: false },
+      { id: "14-3", name: "丹 (2位)", checked: false },
+      { id: "14-4", name: "基茂 (1位)", checked: false },
+      { id: "14-5", name: "英 (2位)", checked: false },
+      { id: "14-6", name: "劉生", checked: false },
+      { id: "14-7", name: "太 (2位)", checked: false }
+    ]
+  },
+
+  // --- 女方 (左邊 - 單數) ---
+  { 
+    id: 5, label: "5", type: "round", side: "Bride", category: "女方親友 (Work Buddy 1)", 
+    guests: [
+      { id: "5-1", name: "Sammi", checked: false },
+      { id: "5-2", name: "Crystal", checked: false },
+      { id: "5-3", name: "Michelle", checked: false },
+      { id: "5-4", name: "Joe Lo", checked: false },
+      { id: "5-5", name: "Winky", checked: false },
+      { id: "5-6", name: "餅 (4位)", checked: false },
+      { id: "5-7", name: "Kathy (2位)", checked: false },
+      { id: "5-8", name: "Miyuki Sze", checked: false }
+    ]
+  },
+  { 
+    id: 7, label: "7", type: "round", side: "Bride", category: "大學同學 (Group 3)", 
+    guests: [
+      { id: "7-1", name: "Denise +1", checked: false },
+      { id: "7-2", name: "Gloria", checked: false },
+      { id: "7-3", name: "Mackie", checked: false },
+      { id: "7-4", name: "Brina", checked: false },
+      { id: "7-5", name: "Ashley", checked: false },
+      { id: "7-6", name: "Shiiko", checked: false },
+      { id: "7-7", name: "Jaye", checked: false },
+      { id: "7-8", name: "Cheryl", checked: false }
+    ]
+  },
+  { 
+    id: 9, label: "9", type: "round", side: "Bride", category: "女方朋友", 
+    guests: [
+      { id: "9-1", name: "女方親友 A", checked: false },
+      { id: "9-2", name: "女方親友 B", checked: false }
+    ]
+  },
+  { 
+    id: 11, label: "11", type: "round", side: "Bride", category: "女方朋友", 
+    guests: [
+      { id: "11-1", name: "女方親友 C", checked: false },
+      { id: "11-2", name: "女方親友 D", checked: false }
+    ]
+  },
+  { 
+    id: 13, label: "13", type: "round", side: "Bride", category: "女方朋友", 
+    guests: [
+      { id: "13-1", name: "女方親友 E", checked: false }
+    ]
+  },
+  { 
+    id: 15, label: "15", type: "round", side: "Bride", category: "女方朋友", 
+    guests: [
+      { id: "15-1", name: "女方親友 F", checked: false }
+    ]
+  },
+];
+
+export default function App() {
+  const [tables, setTables] = useState(TABLE_DATA);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTableId, setSelectedTableId] = useState(null);
+  const [viewMode, setViewMode] = useState("map"); // 'map' or 'list'
+
+  // --- Logic: 搜尋高亮 ---
+  // 找出包含搜尋關鍵字的桌子 ID
+  const matchedTableIds = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+    const term = searchTerm.toLowerCase();
+    
+    // 搜尋桌號
+    const tableMatches = tables
+      .filter(t => t.label === term || t.label.includes(term))
+      .map(t => t.id);
+
+    // 搜尋人名
+    const guestMatches = tables
+      .filter(t => t.guests.some(g => g.name.toLowerCase().includes(term)))
+      .map(t => t.id);
+
+    return [...new Set([...tableMatches, ...guestMatches])];
+  }, [searchTerm, tables]);
+
+  // 如果只有一個匹配結果，自動選中該桌子 (Optional UX enhancement)
+  useEffect(() => {
+    if (matchedTableIds.length === 1 && searchTerm.length > 1) {
+      setSelectedTableId(matchedTableIds[0]);
+    }
+  }, [matchedTableIds, searchTerm]);
+
+  // --- Logic: 簽到 ---
+  const toggleGuestCheckIn = (tableId, guestId) => {
+    setTables(prev => prev.map(table => {
+      if (table.id !== tableId) return table;
+      return {
+        ...table,
+        guests: table.guests.map(g => 
+          g.id === guestId ? { ...g, checked: !g.checked } : g
+        )
+      };
+    }));
+  };
+
+  // --- Logic: 統計 ---
+  const stats = useMemo(() => {
+    let total = 0;
+    let checked = 0;
+    tables.forEach(t => {
+      // 簡單計算：假設名字有 (xN) 代表N人，這裡為了簡單只算"條目"數，
+      // 若要精確人數需解析字串，這裡先算出席單位(Group/Person)
+      total += t.guests.length;
+      checked += t.guests.filter(g => g.checked).length;
+    });
+    return { total, checked, percent: total === 0 ? 0 : Math.round((checked / total) * 100) };
+  }, [tables]);
+
+  const selectedTableData = tables.find(t => t.id === selectedTableId);
+
+  // --- Components ---
+  
+  // 地圖上的桌子組件
+  const MapTable = ({ table, isMatched }) => {
+    // 計算該桌是否已全到
+    const isFull = table.guests.every(g => g.checked);
+    const hasSome = table.guests.some(g => g.checked);
+    
+    // 樣式邏輯
+    let baseClass = "transition-all duration-300 cursor-pointer flex items-center justify-center shadow-md relative";
+    let shapeClass = table.type === 'rect' ? "w-48 h-16 rounded-lg" : "w-20 h-20 rounded-full";
+    
+    // 顏色邏輯：搜尋匹配 > 全到 > 部分到 > 默認
+    let colorClass = "bg-white border-2 border-gray-200 text-gray-600";
+    if (isMatched) {
+      colorClass = "bg-amber-500 border-amber-600 text-white animate-pulse ring-4 ring-amber-200 scale-110 z-10";
+    } else if (isFull) {
+      colorClass = "bg-green-100 border-green-500 text-green-700";
+    } else if (hasSome) {
+      colorClass = "bg-blue-50 border-blue-300 text-blue-700";
+    }
+
+    // 左右方顏色標識 (僅邊框提示)
+    const sideIndicator = !isMatched && !isFull && !hasSome ? (
+      table.side === 'Bride' ? 'border-pink-200' : 
+      table.side === 'Groom' ? 'border-indigo-200' : 'border-amber-200'
+    ) : '';
+
+    return (
+      <button 
+        className={`${baseClass} ${shapeClass} ${colorClass} ${sideIndicator}`}
+        onClick={() => setSelectedTableId(table.id)}
+      >
+        <div className="text-center">
+          <span className="font-serif font-bold text-xl">{table.label}</span>
+          {isMatched && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full shadow">HERE</span>}
+        </div>
+      </button>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-stone-100 font-sans text-gray-800 flex flex-col relative overflow-hidden">
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+          .printable { display: block !important; }
+          body { background: white; -webkit-print-color-adjust: exact; }
+        }
+        .printable { display: none; }
+        /* 自定義滾動條隱藏 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+      {/* --- Header & Search Bar --- */}
+      <div className="bg-white shadow-md z-20 px-4 py-3 no-print">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="font-serif text-2xl font-bold text-gray-800">
+              <span className="text-amber-500">Shirley & Oscar</span> Check-in
+            </h1>
+            <div className="text-right">
+              <div className="text-xs text-gray-400 uppercase tracking-wider">Arrived</div>
+              <div className="font-bold text-xl text-amber-600">{stats.checked} <span className="text-gray-400 text-sm">/ {stats.total}</span></div>
+            </div>
+          </div>
+          
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <input 
+              type="text" 
+              placeholder="搜尋賓客姓名 (Search Guest Name)..." 
+              className="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-xl border-none focus:ring-2 focus:ring-amber-400 outline-none text-lg"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-gray-200 rounded-full text-gray-600"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* --- Main Content: Map Area --- */}
+      <div className="flex-1 overflow-auto bg-stone-50 relative no-print touch-pan-x touch-pan-y p-8">
+        <div className="max-w-2xl mx-auto min-h-[600px] relative pb-20">
+          
+          {/* STAGE AREA */}
+          <div className="w-full h-12 bg-gray-800 rounded-t-3xl mb-12 flex items-center justify-center text-white text-sm tracking-widest shadow-lg">
+            STAGE (舞台)
+          </div>
+
+          {/* DYNAMIC MAP GRID */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-12 justify-items-center relative">
+            
+            {/* VIP ROW (Spans full width) */}
+            <div className="col-span-2 w-full flex justify-center items-end gap-4 mb-8 relative">
+              {/* Table 3 (Left of Head) */}
+              <div className="relative top-8">
+                 <MapTable table={tables.find(t => t.id === 3)} isMatched={matchedTableIds.includes(3)} />
+                 <div className="text-center mt-2 text-xs text-pink-700 font-bold">女方長輩</div>
+              </div>
+              
+              {/* Table 1 (Center) */}
+              <div className="z-10">
+                <MapTable table={tables.find(t => t.id === 1)} isMatched={matchedTableIds.includes(1)} />
+                <div className="text-center mt-2 text-xs text-amber-700 font-bold">主家席</div>
+              </div>
+
+              {/* Table 2 (Right of Head) */}
+              <div className="relative top-8">
+                <MapTable table={tables.find(t => t.id === 2)} isMatched={matchedTableIds.includes(2)} />
+                <div className="text-center mt-2 text-xs text-indigo-700 font-bold">男方長輩</div>
+              </div>
+            </div>
+
+            {/* GUEST TABLES COLUMNS */}
+            {/* Left Column (Odds) - Bride */}
+            <div className="flex flex-col gap-8 items-center border-r border-dashed border-gray-200 pr-8 w-full">
+              <div className="text-xs font-bold text-pink-400 uppercase tracking-widest mb-2">Bride Side (女方)</div>
+              {[5, 7, 9, 11, 13, 15].map(id => {
+                const table = tables.find(t => t.id === id);
+                return table && <MapTable key={id} table={table} isMatched={matchedTableIds.includes(id)} />;
+              })}
+            </div>
+
+            {/* Right Column (Evens) - Groom */}
+            <div className="flex flex-col gap-8 items-center pl-8 w-full">
+              <div className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">Groom Side (男方)</div>
+              {[4, 6, 8, 10, 12, 14].map(id => {
+                const table = tables.find(t => t.id === id);
+                return table && <MapTable key={id} table={table} isMatched={matchedTableIds.includes(id)} />;
+              })}
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* --- Footer Controls --- */}
+      <div className="bg-white border-t border-gray-200 p-4 no-print safe-area-pb">
+        <div className="flex justify-between max-w-3xl mx-auto text-sm text-gray-500">
+          <div className="flex gap-4">
+             <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-100 border border-green-500"></span> 全到</div>
+             <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-50 border border-blue-300"></span> 部分</div>
+             <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-white border border-gray-300"></span> 未到</div>
+          </div>
+          <button onClick={() => window.print()} className="flex items-center gap-1 text-gray-600">
+            <Printer size={16} /> 列印
+          </button>
+        </div>
+      </div>
+
+      {/* --- Modal: Guest List for Selected Table --- */}
+      {selectedTableId && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center animate-fade-in no-print" onClick={() => setSelectedTableId(null)}>
+          <div 
+            className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className={`p-6 ${selectedTableData.side === 'Bride' ? 'bg-pink-50' : selectedTableData.side === 'Groom' ? 'bg-indigo-50' : 'bg-amber-50'}`}>
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h2 className="text-3xl font-serif font-bold text-gray-800">Table {selectedTableData.label}</h2>
+                  <p className="text-gray-600 font-medium">{selectedTableData.category}</p>
+                </div>
+                <button onClick={() => setSelectedTableId(null)} className="p-2 bg-white/50 rounded-full hover:bg-white transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="flex gap-2 text-sm">
+                <span className="bg-white/80 px-2 py-1 rounded text-gray-600 border border-gray-100 shadow-sm">
+                  {selectedTableData.guests.length} 位賓客
+                </span>
+                <span className="bg-white/80 px-2 py-1 rounded text-gray-600 border border-gray-100 shadow-sm">
+                  已到: {selectedTableData.guests.filter(g => g.checked).length}
+                </span>
+              </div>
+            </div>
+
+            {/* Guest List */}
+            <div className="p-4 overflow-y-auto">
+              <div className="space-y-3">
+                {selectedTableData.guests.map(guest => (
+                  <div 
+                    key={guest.id}
+                    onClick={() => toggleGuestCheckIn(selectedTableId, guest.id)}
+                    className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      guest.checked 
+                        ? 'border-amber-400 bg-amber-50 shadow-inner' 
+                        : 'border-gray-100 hover:border-amber-200 bg-white shadow-sm'
+                    }`}
+                  >
+                    <span className={`text-lg font-medium ${guest.checked ? 'text-amber-900' : 'text-gray-700'}`}>
+                      {guest.name}
+                    </span>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                      guest.checked ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-300'
+                    }`}>
+                      {guest.checked ? <CheckCircle size={20} /> : <Circle size={20} />}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t bg-gray-50 text-center">
+               <button 
+                onClick={() => setSelectedTableId(null)}
+                className="w-full py-3 bg-gray-800 text-white rounded-xl font-bold"
+               >
+                 完成 (Done)
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- Print View (Hidden on Screen) --- */}
+      <div className="printable p-8 max-w-4xl mx-auto">
+        <h1 className="text-3xl font-serif text-center mb-8">Shirley & Oscar Wedding Floor Plan & Guest List</h1>
+        
+        <div className="grid grid-cols-2 gap-8">
+          {tables.sort((a,b) => a.id - b.id).map(table => (
+            <div key={table.id} className="border border-gray-300 rounded-lg p-4 break-inside-avoid">
+              <div className="flex justify-between border-b pb-2 mb-2">
+                <span className="font-bold text-xl">Table {table.label}</span>
+                <span className="text-sm text-gray-500">{table.category}</span>
+              </div>
+              <ul className="text-sm space-y-2">
+                {table.guests.map(g => (
+                  <li key={g.id} className="flex justify-between">
+                    <span>{g.name}</span>
+                    <span className="w-4 h-4 border border-gray-400"></span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}
