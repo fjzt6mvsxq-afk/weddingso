@@ -1,533 +1,575 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shirley & Oscar Wedding Check-in</title>
-    
-    <!-- 引入 Tailwind CSS (樣式) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>婚宴座位與簽到系統</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 引入 React 和 Babel (核心邏輯) -->
-    <!-- 使用特定版本以確保穩定性 -->
-    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- 引入 Lucide Icons (圖示) - 修復版本問題 -->
-    <!-- 使用 0.263.1 版本，避免最新版 UMD 建構的 forwardRef 錯誤 -->
-    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
+    <!-- Google Fonts: Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                    },
+                    colors: {
+                        wedding: {
+                            red: '#8a1c28', // 勃艮第紅
+                            darkRed: '#5a121a', // 深紅背景
+                            gold: '#c5a059', // 香檳金
+                            light: '#fdfbf7', // 米白底色
+                            green: '#4a7c59', // 簽到綠
+                            pink: '#fce7e9',
+                            blue: '#e0f2fe', // 男家藍
+                        }
+                    },
+                    boxShadow: {
+                        'up': '0 -10px 25px -5px rgba(0, 0, 0, 0.1), 0 -8px 10px -6px rgba(0, 0, 0, 0.1)',
+                        'card': '0 4px 20px rgba(138, 28, 40, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Lato:wght@400;700&display=swap');
-        
         body {
-            font-family: 'Lato', 'Noto Serif TC', serif;
+            background-color: #fdfbf7;
+            -webkit-tap-highlight-color: transparent;
         }
-        
-        @media print {
-            .no-print { display: none !important; }
-            .printable { display: block !important; }
-            body { background: white; -webkit-print-color-adjust: exact; }
-            @page { size: auto; margin: 10mm; }
+
+        /* 背景紋理 */
+        .floral-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: url('https://images.unsplash.com/photo-1627569209776-353df13c3164?q=80&w=2070&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+            opacity: 0.05;
+            filter: grayscale(100%) contrast(120%);
+            pointer-events: none;
         }
-        .printable { display: none; }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 動畫效果 */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        .transition-all-300 { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* 簽到狀態樣式 */
+        .guest-card.checked-in {
+            background: linear-gradient(to bottom right, #f0fdf4, #dcfce7);
+            border-color: #86efac;
         }
-        .animate-ring {
-            animation: pulse-ring 2s infinite;
+        .guest-card.checked-in .avatar-box {
+            background-color: #16a34a;
+            color: white;
+        }
+        .guest-card.checked-in .check-icon {
+            opacity: 1;
+            transform: scale(1);
         }
     </style>
 </head>
-<body class="bg-stone-100 text-gray-800">
+<body class="text-gray-800 antialiased h-screen flex flex-col overflow-hidden">
 
-    <div id="root"></div>
+    <div class="floral-bg"></div>
 
-    <script type="text/babel">
-        // 取得 React Hook
-        const { useState, useMemo, useEffect } = React;
+    <div class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
         
-        // 取得 Icons (安全檢查)
-        const Icons = window.lucideReact || {};
-        const { Search, Users, MapPin, CheckCircle, Circle, X, Printer, UserCheck } = Icons;
-
-        // 如果圖標加載失敗，提供一個簡單的 fallback 組件以防白屏
-        const FallbackIcon = () => <span style={{display:'inline-block', width:'20px', height:'20px', background:'#ccc', borderRadius:'50%'}}></span>;
-        
-        // -----------------------------------------------------------------------------
-        // 賓客名單數據 (與之前版本一致)
-        // -----------------------------------------------------------------------------
-        const TABLE_DATA = [
-          // --- 主舞台區 ---
-          { 
-            id: 1, label: "1", type: "rect", side: "VIP", category: "主家席 (Head Table)", 
-            guests: [
-              { id: "1-1", name: "新郎 & 新娘 (Bride & Groom)", checked: false },
-              { id: "1-2", name: "姨媽 (4位)", checked: false },
-              { id: "1-3", name: "我媽 (Mom)", checked: false },
-              { id: "1-4", name: "我 (2位)", checked: false },
-              { id: "1-5", name: "生 (2位)", checked: false },
-              { id: "1-6", name: "表姨 (6位)", checked: false },
-              { id: "1-7", name: "新 胡生 (3位)", checked: false },
-              { id: "1-8", name: "永高老报 (2位)", checked: false }
-            ]
-          },
-          
-          // --- 長輩席 ---
-          { 
-            id: 3, label: "3", type: "round", side: "Bride", category: "女方長輩 (GE FAM)", 
-            guests: [
-              { id: "3-1", name: "GE FAM 親友團 (12位)", checked: false },
-              { id: "3-2", name: "女方親戚 (Relatives)", checked: false }
-            ]
-          },
-          { 
-            id: 2, label: "2", type: "round", side: "Groom", category: "男方長輩 (SH FAM)", 
-            guests: [
-              { id: "2-1", name: "SH FAM 2 親友團 (12位)", checked: false },
-              { id: "2-2", name: "男方親戚 (Relatives)", checked: false }
-            ]
-          },
-
-          // --- 男方 (右邊 - 雙數) ---
-          { 
-            id: 4, label: "4", type: "round", side: "Groom", category: "男方親友 (FAM 4)", 
-            guests: [
-              { id: "4-1", name: "Roberto (2位)", checked: false },
-              { id: "4-2", name: "吳總 (2位)", checked: false },
-              { id: "4-3", name: "徐生 (1位)", checked: false },
-              { id: "4-4", name: "印尼肥仔 (5位)", checked: false },
-              { id: "4-5", name: "深圳徐總", checked: false },
-              { id: "4-6", name: "深圳Jimmy", checked: false }
-            ]
-          },
-          { 
-            id: 6, label: "6", type: "round", side: "Groom", category: "男方親友 (FAM 5)", 
-            guests: [
-              { id: "6-1", name: "大眼仔 (2位)", checked: false },
-              { id: "6-2", name: "4.1 (1位)", checked: false },
-              { id: "6-3", name: "陳凱韋 (1位)", checked: false },
-              { id: "6-4", name: "黃國 (2位)", checked: false },
-              { id: "6-5", name: "發 (2位)", checked: false }
-            ]
-          },
-          { 
-            id: 8, label: "8", type: "round", side: "Groom", category: "男方同事 (FAM 6)", 
-            guests: [
-              { id: "8-1", name: "昌 Jason (1位)", checked: false },
-              { id: "8-2", name: "遠大 William (1位)", checked: false },
-              { id: "8-3", name: "匯泉 (2位)", checked: false },
-              { id: "8-4", name: "公司 (3位)", checked: false },
-              { id: "8-5", name: "柜林生 (2位)", checked: false },
-              { id: "8-6", name: "劉总 (2位)", checked: false },
-              { id: "8-7", name: "Lala (1位)", checked: false }
-            ]
-          },
-          { 
-            id: 10, label: "10", type: "round", side: "Groom", category: "中學同學 (Group 4)", 
-            guests: [
-              { id: "10-1", name: "Phoebe", checked: false },
-              { id: "10-2", name: "Ting", checked: false },
-              { id: "10-3", name: "Chris", checked: false },
-              { id: "10-4", name: "Siann", checked: false },
-              { id: "10-5", name: "Mirror", checked: false },
-              { id: "10-6", name: "KC", checked: false },
-              { id: "10-7", name: "Bakmo", checked: false },
-              { id: "10-8", name: "Sherman", checked: false },
-              { id: "10-9", name: "Wilson", checked: false },
-              { id: "10-10", name: "Andy", checked: false },
-              { id: "10-11", name: "Anthony", checked: false },
-              { id: "10-12", name: "Justin", checked: false }
-            ]
-          },
-          { 
-            id: 12, label: "12", type: "round", side: "Groom", category: "親友 (Group 2)", 
-            guests: [
-              { id: "12-1", name: "暢 (新郎兒子)", checked: false },
-              { id: "12-2", name: "婦科", checked: false },
-              { id: "12-3", name: "Harry (3位)", checked: false },
-              { id: "12-4", name: "林綺婷 (1位)", checked: false },
-              { id: "12-5", name: "Scott (1位)", checked: false },
-              { id: "12-6", name: "Dicky Cheung (2位)", checked: false },
-              { id: "12-7", name: "老黑", checked: false },
-              { id: "12-8", name: "任旭陽", checked: false },
-              { id: "12-9", name: "Rannie Yu", checked: false }
-            ]
-          },
-          { 
-            id: 14, label: "14", type: "round", side: "Groom", category: "男方親友 (FAM 2/3)", 
-            guests: [
-              { id: "14-1", name: "文昭 (2位)", checked: false },
-              { id: "14-2", name: "强 (2位)", checked: false },
-              { id: "14-3", name: "丹 (2位)", checked: false },
-              { id: "14-4", name: "基茂 (1位)", checked: false },
-              { id: "14-5", name: "英 (2位)", checked: false },
-              { id: "14-6", name: "劉生", checked: false },
-              { id: "14-7", name: "太 (2位)", checked: false }
-            ]
-          },
-
-          // --- 女方 (左邊 - 單數) ---
-          { 
-            id: 5, label: "5", type: "round", side: "Bride", category: "女方親友 (Work Buddy 1)", 
-            guests: [
-              { id: "5-1", name: "Sammi", checked: false },
-              { id: "5-2", name: "Crystal", checked: false },
-              { id: "5-3", name: "Michelle", checked: false },
-              { id: "5-4", name: "Joe Lo", checked: false },
-              { id: "5-5", name: "Winky", checked: false },
-              { id: "5-6", name: "餅 (4位)", checked: false },
-              { id: "5-7", name: "Kathy (2位)", checked: false },
-              { id: "5-8", name: "Miyuki Sze", checked: false }
-            ]
-          },
-          { 
-            id: 7, label: "7", type: "round", side: "Bride", category: "大學同學 (Group 3)", 
-            guests: [
-              { id: "7-1", name: "Denise +1", checked: false },
-              { id: "7-2", name: "Gloria", checked: false },
-              { id: "7-3", name: "Mackie", checked: false },
-              { id: "7-4", name: "Brina", checked: false },
-              { id: "7-5", name: "Ashley", checked: false },
-              { id: "7-6", name: "Shiiko", checked: false },
-              { id: "7-7", name: "Jaye", checked: false },
-              { id: "7-8", name: "Cheryl", checked: false }
-            ]
-          },
-          { 
-            id: 9, label: "9", type: "round", side: "Bride", category: "女方朋友", 
-            guests: [
-              { id: "9-1", name: "女方親友 A", checked: false },
-              { id: "9-2", name: "女方親友 B", checked: false }
-            ]
-          },
-          { 
-            id: 11, label: "11", type: "round", side: "Bride", category: "女方朋友", 
-            guests: [
-              { id: "11-1", name: "女方親友 C", checked: false },
-              { id: "11-2", name: "女方親友 D", checked: false }
-            ]
-          },
-          { 
-            id: 13, label: "13", type: "round", side: "Bride", category: "女方朋友", 
-            guests: [
-              { id: "13-1", name: "女方親友 E", checked: false }
-            ]
-          },
-          { 
-            id: 15, label: "15", type: "round", side: "Bride", category: "女方朋友", 
-            guests: [
-              { id: "15-1", name: "女方親友 F", checked: false }
-            ]
-          },
-        ];
-
-        function App() {
-          const [tables, setTables] = useState(TABLE_DATA);
-          const [searchTerm, setSearchTerm] = useState("");
-          const [selectedTableId, setSelectedTableId] = useState(null);
-
-          // --- Logic: 搜尋高亮 ---
-          const matchedTableIds = useMemo(() => {
-            if (!searchTerm.trim()) return [];
-            const term = searchTerm.toLowerCase();
+        <!-- Header -->
+        <header class="bg-wedding-darkRed text-white pt-12 pb-32 px-6 rounded-b-[3rem] shadow-2xl relative z-10 shrink-0 overflow-hidden">
             
-            // 搜尋桌號
-            const tableMatches = tables
-              .filter(t => t.label === term || t.label.includes(term))
-              .map(t => t.id);
-
-            // 搜尋人名
-            const guestMatches = tables
-              .filter(t => t.guests.some(g => g.name.toLowerCase().includes(term)))
-              .map(t => t.id);
-
-            return [...new Set([...tableMatches, ...guestMatches])];
-          }, [searchTerm, tables]);
-
-          // 自動選擇
-          useEffect(() => {
-            if (matchedTableIds.length === 1 && searchTerm.length > 1) {
-              setSelectedTableId(matchedTableIds[0]);
-            }
-          }, [matchedTableIds, searchTerm]);
-
-          // --- Logic: 簽到 ---
-          const toggleGuestCheckIn = (tableId, guestId) => {
-            setTables(prev => prev.map(table => {
-              if (table.id !== tableId) return table;
-              return {
-                ...table,
-                guests: table.guests.map(g => 
-                  g.id === guestId ? { ...g, checked: !g.checked } : g
-                )
-              };
-            }));
-          };
-
-          // --- Logic: 統計 ---
-          const stats = useMemo(() => {
-            let total = 0;
-            let checked = 0;
-            tables.forEach(t => {
-              total += t.guests.length;
-              checked += t.guests.filter(g => g.checked).length;
-            });
-            return { total, checked };
-          }, [tables]);
-
-          const selectedTableData = tables.find(t => t.id === selectedTableId);
-
-          // --- Component: Map Table ---
-          const MapTable = ({ table, isMatched }) => {
-            const isFull = table.guests.every(g => g.checked);
-            const hasSome = table.guests.some(g => g.checked);
+            <!-- 上傳圖片背景層 -->
+            <!-- 這裡去除了 mix-blend-overlay 並提高了 opacity，確保圖片清晰可見 -->
+            <div class="absolute inset-0 z-0 opacity-60">
+                <img src="b3974525a4624d5599f16060c7cc8e7e.png" alt="Wedding Header" class="w-full h-full object-cover">
+            </div>
             
-            let baseClass = "transition-all duration-300 cursor-pointer flex items-center justify-center shadow-md relative select-none";
-            let shapeClass = table.type === 'rect' ? "w-48 h-16 rounded-lg" : "w-20 h-20 rounded-full";
+            <!-- 漸層遮罩 (從下往上漸黑，確保底部文字清晰) -->
+            <div class="absolute inset-0 z-0 bg-gradient-to-t from-wedding-darkRed/95 via-wedding-darkRed/40 to-transparent"></div>
+
+            <!-- Header 內容 (z-10 確保在圖片之上) -->
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h2 class="text-wedding-gold text-xs font-bold tracking-widest uppercase mb-1 opacity-90 drop-shadow-sm">Wedding Reception</h2>
+                        <h1 class="text-2xl font-bold drop-shadow-md">賓客簽到與座位</h1>
+                    </div>
+                    <!-- 總體進度圈 -->
+                    <div class="relative w-12 h-12 flex items-center justify-center">
+                        <svg class="transform -rotate-90 w-12 h-12">
+                            <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" fill="transparent" class="text-white/20" />
+                            <circle id="progressCircle" cx="24" cy="24" r="20" stroke="#c5a059" stroke-width="4" fill="transparent" stroke-dasharray="125.6" stroke-dashoffset="125.6" class="transition-all duration-1000 ease-out" />
+                        </svg>
+                        <span class="absolute text-[10px] font-bold" id="progressText">0%</span>
+                    </div>
+                </div>
+
+                <!-- 數據概覽 -->
+                <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+                    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[90px] border border-white/10 shadow-lg">
+                        <div class="text-[10px] text-gray-200 mb-1">總人數</div>
+                        <div class="text-xl font-bold" id="totalHeadcount">0</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[90px] border border-green-400/30 bg-green-900/30 shadow-lg">
+                        <div class="text-[10px] text-green-200 mb-1">已簽到</div>
+                        <div class="text-xl font-bold text-green-300" id="checkedInCount">0</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[90px] border border-white/10 shadow-lg">
+                        <div class="text-[10px] text-gray-200 mb-1">未到</div>
+                        <div class="text-xl font-bold text-wedding-gold" id="pendingCount">0</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="-mt-24 px-4 pb-24 relative z-20 flex-1">
             
-            let colorClass = "bg-white border-2 border-gray-200 text-gray-600";
-            let animationClass = "";
-
-            if (isMatched) {
-              colorClass = "bg-amber-500 border-amber-600 text-white ring-4 ring-amber-200 scale-110 z-10";
-              animationClass = "animate-ring";
-            } else if (isFull) {
-              colorClass = "bg-green-100 border-green-500 text-green-700";
-            } else if (hasSome) {
-              colorClass = "bg-blue-50 border-blue-300 text-blue-700";
-            }
-
-            const sideIndicator = !isMatched && !isFull && !hasSome ? (
-              table.side === 'Bride' ? 'border-pink-200' : 
-              table.side === 'Groom' ? 'border-indigo-200' : 'border-amber-200'
-            ) : '';
-
-            return (
-              <div 
-                className={`${baseClass} ${shapeClass} ${colorClass} ${sideIndicator} ${animationClass}`}
-                onClick={() => setSelectedTableId(table.id)}
-              >
-                <div className="text-center">
-                  <span className="font-serif font-bold text-xl">{table.label}</span>
-                  {isMatched && <span className="absolute -top-3 -right-3 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full shadow-lg font-bold">HERE</span>}
+            <!-- Search -->
+            <div class="bg-white/95 backdrop-blur-xl rounded-2xl shadow-card p-4 mb-6 flex items-center gap-3 sticky top-4 z-30 ring-1 ring-gray-100/50">
+                <div class="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center text-gray-500 shrink-0">
+                    <i class="fas fa-search"></i>
                 </div>
-              </div>
-            );
-          };
+                <input type="text" id="searchInput" placeholder="搜尋賓客姓名 (例如: 舅父, Sammi)..." class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400 font-medium h-full">
+                <button onclick="clearSearch()" id="clearSearchBtn" class="hidden text-gray-400 p-2"><i class="fas fa-times"></i></button>
+            </div>
 
-          return (
-            <div className="min-h-screen flex flex-col relative overflow-hidden">
-              {/* --- Header & Search Bar --- */}
-              <div className="bg-white shadow-md z-20 px-4 py-3 no-print sticky top-0">
-                <div className="max-w-3xl mx-auto">
-                  <div className="flex justify-between items-center mb-4">
-                    <h1 className="font-serif text-2xl font-bold text-gray-800 flex items-center gap-2">
-                      <span className="text-amber-500">Shirley & Oscar</span>
-                    </h1>
-                    <div className="text-right">
-                      <div className="text-xs text-gray-400 uppercase tracking-wider">已簽到 (Arrived)</div>
-                      <div className="font-bold text-xl text-amber-600">{stats.checked} <span className="text-gray-400 text-sm">/ {stats.total}</span></div>
-                    </div>
-                  </div>
-                  
-                  <div className="relative">
-                    {Search ? <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /> : <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>}
-                    <input 
-                      type="text" 
-                      placeholder="搜尋姓名 (Search)..." 
-                      className="w-full pl-10 pr-4 py-3 bg-gray-100 rounded-xl border-none focus:ring-2 focus:ring-amber-400 outline-none text-lg transition-all"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    {searchTerm && (
-                      <button 
-                        onClick={() => setSearchTerm("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-gray-200 rounded-full text-gray-600 hover:bg-gray-300 transition-colors"
-                      >
-                        {X ? <X size={14} /> : <span>X</span>}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+            <!-- Table List -->
+            <div id="tablesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- JS Generated -->
+            </div>
 
-              {/* --- Main Content: Map Area --- */}
-              <div className="flex-1 overflow-auto bg-stone-50 relative no-print touch-pan-x touch-pan-y p-8">
-                <div className="max-w-2xl mx-auto min-h-[600px] relative pb-24">
-                  
-                  {/* STAGE AREA */}
-                  <div className="w-full h-12 bg-gray-800 rounded-t-3xl mb-12 flex items-center justify-center text-white text-sm tracking-widest shadow-lg">
-                    STAGE (舞台)
-                  </div>
+            <div class="h-20"></div>
+        </main>
+    </div>
 
-                  {/* DYNAMIC MAP GRID */}
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-12 justify-items-center relative">
-                    
-                    {/* VIP ROW */}
-                    <div className="col-span-2 w-full flex justify-center items-end gap-4 mb-8 relative">
-                      {/* Table 3 */}
-                      <div className="relative top-8 flex flex-col items-center">
-                         <MapTable table={tables.find(t => t.id === 3)} isMatched={matchedTableIds.includes(3)} />
-                         <div className="text-center mt-2 text-xs text-pink-700 font-bold bg-pink-50 px-2 py-1 rounded">女方長輩</div>
-                      </div>
-                      
-                      {/* Table 1 */}
-                      <div className="z-10 flex flex-col items-center">
-                        <MapTable table={tables.find(t => t.id === 1)} isMatched={matchedTableIds.includes(1)} />
-                        <div className="text-center mt-2 text-xs text-amber-700 font-bold bg-amber-50 px-2 py-1 rounded">主家席</div>
-                      </div>
+    <!-- Check-in Modal -->
+    <div id="checkInModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-6 opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 relative" id="checkInContent">
+            
+            <!-- Close Button -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
 
-                      {/* Table 2 */}
-                      <div className="relative top-8 flex flex-col items-center">
-                        <MapTable table={tables.find(t => t.id === 2)} isMatched={matchedTableIds.includes(2)} />
-                        <div className="text-center mt-2 text-xs text-indigo-700 font-bold bg-indigo-50 px-2 py-1 rounded">男方長輩</div>
-                      </div>
-                    </div>
-
-                    {/* Left Column (Bride) */}
-                    <div className="flex flex-col gap-8 items-center border-r-2 border-dashed border-gray-200 pr-8 w-full">
-                      <div className="text-xs font-bold text-pink-400 uppercase tracking-widest mb-2 bg-white px-2 py-1 rounded-full shadow-sm">女方 Bride</div>
-                      {[5, 7, 9, 11, 13, 15].map(id => {
-                        const table = tables.find(t => t.id === id);
-                        return table && <MapTable key={id} table={table} isMatched={matchedTableIds.includes(id)} />;
-                      })}
-                    </div>
-
-                    {/* Right Column (Groom) */}
-                    <div className="flex flex-col gap-8 items-center pl-8 w-full">
-                      <div className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2 bg-white px-2 py-1 rounded-full shadow-sm">男方 Groom</div>
-                      {[4, 6, 8, 10, 12, 14].map(id => {
-                        const table = tables.find(t => t.id === id);
-                        return table && <MapTable key={id} table={table} isMatched={matchedTableIds.includes(id)} />;
-                      })}
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-
-              {/* --- Footer Controls --- */}
-              <div className="bg-white border-t border-gray-200 p-4 no-print fixed bottom-0 w-full z-10">
-                <div className="flex justify-between items-center max-w-3xl mx-auto text-sm text-gray-500">
-                  <div className="flex gap-3">
-                     <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-100 border border-green-500"></span> 全到</div>
-                     <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-50 border border-blue-300"></span> 部分</div>
-                     <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-white border border-gray-300"></span> 未到</div>
-                  </div>
-                  <button onClick={() => window.print()} className="flex items-center gap-2 text-amber-600 font-bold px-4 py-2 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors">
-                    {Printer ? <Printer size={18} /> : <span>Print</span>} 列印名單
-                  </button>
-                </div>
-              </div>
-
-              {/* --- Modal: Guest List --- */}
-              {selectedTableId && (
-                <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center backdrop-blur-sm no-print" onClick={() => setSelectedTableId(null)}>
-                  <div 
-                    className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-slide-up"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    {/* Modal Header */}
-                    <div className={`p-6 ${selectedTableData.side === 'Bride' ? 'bg-pink-50' : selectedTableData.side === 'Groom' ? 'bg-indigo-50' : 'bg-amber-50'}`}>
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h2 className="text-3xl font-serif font-bold text-gray-800">Table {selectedTableData.label}</h2>
-                          <p className="text-gray-600 font-medium">{selectedTableData.category}</p>
-                        </div>
-                        <button onClick={() => setSelectedTableId(null)} className="p-2 bg-white/50 rounded-full hover:bg-white transition-colors">
-                          {X ? <X size={24} /> : <span>X</span>}
-                        </button>
-                      </div>
-                      <div className="flex gap-2 text-sm mt-2">
-                        <span className="bg-white/90 px-3 py-1 rounded-full text-gray-600 shadow-sm font-medium">
-                          共 {selectedTableData.guests.length} 位
-                        </span>
-                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full shadow-sm font-medium">
-                          已到: {selectedTableData.guests.filter(g => g.checked).length}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Guest List */}
-                    <div className="p-4 overflow-y-auto">
-                      <div className="space-y-3">
-                        {selectedTableData.guests.map(guest => (
-                          <div 
-                            key={guest.id}
-                            onClick={() => toggleGuestCheckIn(selectedTableId, guest.id)}
-                            className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all active:scale-[0.98] ${
-                              guest.checked 
-                                ? 'border-amber-400 bg-amber-50 shadow-inner' 
-                                : 'border-gray-100 hover:border-amber-200 bg-white shadow-sm'
-                            }`}
-                          >
-                            <span className={`text-lg font-medium ${guest.checked ? 'text-amber-900' : 'text-gray-700'}`}>
-                              {guest.name}
-                            </span>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                              guest.checked ? 'bg-amber-500 text-white scale-110' : 'bg-gray-100 text-gray-300'
-                            }`}>
-                              {guest.checked ? (CheckCircle ? <CheckCircle size={20} /> : <span>V</span>) : (Circle ? <Circle size={20} /> : <span>O</span>)}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Modal Footer */}
-                    <div className="p-4 border-t bg-gray-50">
-                       <button 
-                        onClick={() => setSelectedTableId(null)}
-                        className="w-full py-3.5 bg-gray-800 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-gray-700 transition-colors"
-                       >
-                         完成 (Done)
-                       </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* --- Print View (Hidden on Screen) --- */}
-              <div className="printable p-8 max-w-4xl mx-auto">
-                <h1 className="text-3xl font-serif text-center mb-8 border-b-2 border-amber-500 pb-4">Shirley & Oscar Wedding Guest List</h1>
-                <div className="flex justify-between mb-6 text-sm text-gray-500">
-                   <span>Printed Date: {new Date().toLocaleDateString()}</span>
-                   <span>Total Guests: {stats.total}</span>
+            <!-- Top Banner -->
+            <div class="h-32 bg-gradient-to-br from-wedding-red to-pink-900 relative flex items-center justify-center overflow-hidden">
+                <div class="absolute inset-0 opacity-30">
+                     <img src="b3974525a4624d5599f16060c7cc8e7e.png" alt="Header" class="w-full h-full object-cover">
                 </div>
                 
-                <div className="grid grid-cols-2 gap-8">
-                  {tables.sort((a,b) => a.id - b.id).map(table => (
-                    <div key={table.id} className="border border-gray-300 rounded-lg p-4 break-inside-avoid">
-                      <div className="flex justify-between border-b pb-2 mb-2 items-end">
-                        <span className="font-bold text-xl">Table {table.label}</span>
-                        <span className="text-sm text-gray-500">{table.category}</span>
-                      </div>
-                      <ul className="text-sm space-y-2">
-                        {table.guests.map(g => (
-                          <li key={g.id} className="flex justify-between items-center py-1 border-b border-gray-100 last:border-0">
-                            <span>{g.name}</span>
-                            <span className="w-4 h-4 border border-gray-400 rounded-sm"></span>
-                          </li>
-                        ))}
-                      </ul>
+                <div class="absolute -bottom-8 w-20 h-20 bg-white rounded-full p-1.5 shadow-lg z-10">
+                    <div class="w-full h-full bg-gray-100 rounded-full flex items-center justify-center text-3xl font-bold text-wedding-red" id="modalAvatar">
+                        <i class="fas fa-user"></i>
                     </div>
-                  ))}
                 </div>
-              </div>
             </div>
-          );
+
+            <!-- Content -->
+            <div class="pt-12 pb-8 px-6 text-center">
+                <h2 class="text-2xl font-bold text-gray-800 mb-1" id="modalGuestName">Guest Name</h2>
+                <p class="text-sm text-gray-500 mb-6" id="modalGuestTable">Table X</p>
+
+                <!-- Info Cards -->
+                <div class="grid grid-cols-2 gap-3 mb-8">
+                    <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                        <div class="text-xs text-gray-400 uppercase font-bold tracking-wider">人數</div>
+                        <div class="text-xl font-bold text-gray-800" id="modalGuestSize">1</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                        <div class="text-xs text-gray-400 uppercase font-bold tracking-wider">狀態</div>
+                        <div class="text-xl font-bold" id="modalStatusText">未簽到</div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <button id="checkInBtn" onclick="toggleCheckIn()" class="w-full py-4 rounded-xl font-bold text-lg shadow-lg transform transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <!-- Icon & Text injected by JS -->
+                </button>
+                
+                <p class="text-xs text-gray-400 mt-4">點擊上方按鈕切換簽到狀態</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 數據設置 ---
+        const TABLE_COUNT = 19; // 顯示1-19桌 (會過濾掉 4 和 14)
+        const SEATS_PER_TABLE = 12; // 預設每桌12人
+        
+        // 定義桌號分類
+        const GROOM_TABLES = [6, 7, 10, 11, 15, 16, 18, 19]; // 男家朋友
+        const BRIDE_TABLES = [5, 8, 9, 12, 13, 17]; // 女家親戚/朋友
+
+        // 原始數據
+        let rawGuests = [
+            // Table 1
+            { name: "新郎媽媽", tableId: 1 },
+            { name: "新郎姨丈(+新郎姨媽,新郎表哥,新郎表姐)", tableId: 1, manualSize: 4 },
+            { name: "吳生(Mr Roger Ng) (+吳太, Shirley, 表姨丈)", tableId: 1, manualSize: 4 },
+            { name: "新郎大舅父(Steven Hui) (+舅母)", tableId: 1, manualSize: 2 },
+            { name: "新郎舅父(Stanley Hui) (+舅母)", tableId: 1, manualSize: 2 },
+            { name: "胡生(+許小姐+胡超文)", tableId: 1, manualSize: 3 },
+            { name: "永高老叔(+老嬸)", tableId: 1, manualSize: 2 },
+            { name: "新郎", tableId: 1 },
+            { name: "新娘", tableId: 1 },
+            // Table 2 (更新人數)
+            { name: "文昭舅舅(+舅母)", tableId: 2, manualSize: 2 },
+            { name: "炯强舅舅(+舅母)", tableId: 2, manualSize: 2 },
+            { name: "耀彬舅舅(+舅母)", tableId: 2, manualSize: 2 },
+            { name: "基茂舅舅", tableId: 2 },
+            { name: "盛少英(+林先生)", tableId: 2, manualSize: 2 },
+            { name: "劉劍文(+劉太)", tableId: 2, manualSize: 2 },
+            // Table 3
+            { name: "Linda Wu", tableId: 3 }, { name: "胡天虹", tableId: 3 }, { name: "胡秋虹", tableId: 3 },
+            { name: "胡曉虹", tableId: 3 }, { name: "李燕兒", tableId: 3 }, { name: "李秀兒", tableId: 3 },
+            { name: "李倩兒", tableId: 3 }, { name: "李錫生", tableId: 3 }, { name: "李麗兒", tableId: 3 },
+            { name: "區清", tableId: 3 }, { name: "梅冰", tableId: 3 }, { name: "George Yeung", tableId: 3 },
+            // Table 5 (Skipped Table 4)
+            { name: "徐偉", tableId: 5 }, { name: "徐瑞儀", tableId: 5 }, { name: "傅先生全家", tableId: 5, manualSize: 4 },
+            { name: "王向紅", tableId: 5 }, { name: "吳承菊", tableId: 5 }, { name: "吳起恕", tableId: 5 },
+            // Table 6
+            { name: "綺華", tableId: 6 }, { name: "錦鑾", tableId: 6 }, { name: "佩華", tableId: 6 },
+            { name: "淑華", tableId: 6 }, { name: "宋吟", tableId: 6 }, { name: "燕芬", tableId: 6 },
+            { name: "玉娥", tableId: 6 }, { name: "姚晴萱", tableId: 6 }, { name: "姚澤彬", tableId: 6 },
+            { name: "劉子釣(4人)", tableId: 6 },
+            // Table 7 (更新人數)
+            { name: "吳总(+Carly Ng)", tableId: 7, manualSize: 2 }, 
+            { name: "徐生", tableId: 7 }, 
+            { name: "Stephanus (+4)", tableId: 7 }, { name: "Roberto 2", tableId: 7 },
+            { name: "徐總", tableId: 7 }, { name: "Jimmy", tableId: 7 },
+            // Table 8
+            { name: "蔡總全家", tableId: 8, manualSize: 3 }, 
+            { name: "梅士平伉儷", tableId: 8, manualSize: 2 },
+            { name: "李玟鏵", tableId: 8 }, { name: "黃海洋", tableId: 8 }, 
+            { name: "黃珮瑜", tableId: 8 }, { name: "黃海歐", tableId: 8 },
+            { name: "王克強", tableId: 8 }, { name: "鄧柏洋", tableId: 8 },
+            // Table 9
+            { name: "Leila", tableId: 9 }, { name: "Ana", tableId: 9 }, { name: "Gavin", tableId: 9 },
+            { name: "Davina", tableId: 9 }, { name: "Catherine", tableId: 9 }, { name: "Lemon", tableId: 9 },
+            { name: "Nora", tableId: 9 }, { name: "Brian", tableId: 9 }, { name: "Kiki", tableId: 9 },
+            { name: "Jorie", tableId: 9 }, { name: "Yichen", tableId: 9 }, { name: "Katia", tableId: 9 },
+            // Table 10
+            { name: "Sammi", tableId: 10 }, { name: "Crystal", tableId: 10 }, { name: "Michelle", tableId: 10 },
+            { name: "Joe Lo", tableId: 10 }, { name: "Winky", tableId: 10 }, 
+            { name: "鄭國鏘(3位)", tableId: 10 },
+            { name: "Kathy Keh", tableId: 10 }, { name: "Kayleen Keh", tableId: 10 }, { name: "Miyuki sze", tableId: 10 },
+            // Table 11
+            { name: "大眼仔(2位)", tableId: 11 }, { name: "健(4位)", tableId: 11 }, { name: "謙", tableId: 11 },
+            { name: "陳凱偉", tableId: 11 }, { name: "黃國翹(2位)", tableId: 11 }, { name: "方齊發(2位)", tableId: 11 },
+            // Table 12
+            { name: "Phoebe", tableId: 12 }, { name: "Tingting", tableId: 12 }, { name: "Darren", tableId: 12 },
+            { name: "Chris", tableId: 12 }, { name: "Siann", tableId: 12 }, { name: "Miror", tableId: 12 },
+            { name: "KC", tableId: 12 }, { name: "Brian", tableId: 12 }, { name: "Wilson", tableId: 12 },
+            { name: "Andy", tableId: 12 }, { name: "Anthony", tableId: 12 }, { name: "Justin", tableId: 12 },
+            // Table 13
+            { name: "Kelly", tableId: 13 }, { name: "Lancy", tableId: 13 }, { name: "Miss Ma", tableId: 13 },
+            { name: "Miss Jin", tableId: 13 }, { name: "Linda Bai", tableId: 13 }, { name: "王國忠", tableId: 13 },
+            // Table 15 (Skipped Table 14)
+            { name: "Jason", tableId: 15 }, { name: "Wiliam Wong", tableId: 15 }, { name: "James Lo", tableId: 15 },
+            { name: "Nik Po", tableId: 15 }, { name: "林霞", tableId: 15 }, { name: "凌生", tableId: 15 },
+            { name: "張天永", tableId: 15 }, { name: "林生(2位)", tableId: 15 }, { name: "劉总(2位)", tableId: 15 },
+            { name: "Lala", tableId: 15 },
+            // Table 16
+            { name: "暢(兒子)", tableId: 16 }, { name: "葉堡琛", tableId: 16 }, { name: "劉子軒(3位)", tableId: 16 },
+            { name: "林綺婷", tableId: 16 }, { name: "朱岸南", tableId: 16 }, { name: "Dicky Cheung", tableId: 16 },
+            { name: "Karen Law", tableId: 16 }, { name: "范嘉俊", tableId: 16 }, { name: "任旭陽", tableId: 16 },
+            { name: "Rannie Yu", tableId: 16 },
+            // Table 17
+            { name: "Denise", tableId: 17 }, { name: "Leo", tableId: 17 }, { name: "Gloria", tableId: 17 },
+            { name: "Mackie", tableId: 17 }, { name: "Brina", tableId: 17 }, { name: "Ashley", tableId: 17 },
+            { name: "Shiiko", tableId: 17 }, { name: "Jaye", tableId: 17 }, { name: "Cheryl", tableId: 17 },
+            { name: "Betsy", tableId: 17 }, { name: "Joe", tableId: 17 }, { name: "Pakki", tableId: 17 },
+            // Table 18
+            { name: "Crystal", tableId: 18 }, { name: "Ada", tableId: 18 }, { name: "Angel", tableId: 18 },
+            { name: "Celia", tableId: 18 }, { name: "Siu Yuk", tableId: 18 }, { name: "Momoco", tableId: 18 },
+            { name: "Alison", tableId: 18 }, { name: "陳嘉安", tableId: 18 }, { name: "John", tableId: 18 },
+            { name: "Or fu", tableId: 18 },
+            // Table 19
+            { name: "Kelvin Li", tableId: 19 }, { name: "Matt", tableId: 19 }, { name: "Hayley", tableId: 19 },
+            { name: "Ivy", tableId: 19 }, { name: "Ting fung", tableId: 19 }, { name: "Roxanne", tableId: 19 },
+            { name: "Gigi", tableId: 19 }, { name: "Bonnie", tableId: 19 }, { name: "Vicky", tableId: 19 },
+            { name: "Moon", tableId: 19 }, { name: "Sandra", tableId: 19 }, { name: "Cling", tableId: 19 },
+        ];
+
+        let guests = [];
+        let currentGuestId = null;
+
+        // --- 初始化與邏輯 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initGuests();
+            renderApp();
+            setupSearch();
+        });
+
+        // 解析人數邏輯
+        function initGuests() {
+            guests = rawGuests.map((g, index) => {
+                let size = 1;
+                if (g.manualSize) {
+                    size = g.manualSize;
+                } else {
+                    const name = g.name;
+                    const plusMatch = name.match(/\(\+(\d+)\)/);
+                    if (plusMatch) size = 1 + parseInt(plusMatch[1]);
+                    const bracketMatch = name.match(/\((\d+)[位人]\)/);
+                    if (bracketMatch) size = parseInt(bracketMatch[1]);
+                    const spaceNumMatch = name.match(/\s(\d+)$/);
+                    if (spaceNumMatch) size = parseInt(spaceNumMatch[1]);
+                }
+                return {
+                    id: index + 1,
+                    name: g.name,
+                    tableId: g.tableId,
+                    size: size,
+                    checkedIn: false
+                };
+            });
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        function renderApp() {
+            renderStats();
+            renderTables();
+        }
+
+        function renderStats() {
+            const totalHeadcount = guests.reduce((sum, g) => sum + g.size, 0);
+            const checkedInHeadcount = guests.filter(g => g.checkedIn).reduce((sum, g) => sum + g.size, 0);
+            const pendingHeadcount = totalHeadcount - checkedInHeadcount;
+
+            animateValue("totalHeadcount", parseInt(document.getElementById("totalHeadcount").innerText), totalHeadcount, 500);
+            animateValue("checkedInCount", parseInt(document.getElementById("checkedInCount").innerText), checkedInHeadcount, 500);
+            document.getElementById('pendingCount').innerText = pendingHeadcount;
+
+            const percentage = totalHeadcount > 0 ? (checkedInHeadcount / totalHeadcount) * 100 : 0;
+            const circle = document.getElementById('progressCircle');
+            const radius = 20;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (percentage / 100) * circumference;
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            circle.style.strokeDashoffset = offset;
+            document.getElementById('progressText').innerText = Math.round(percentage) + '%';
+        }
+
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            const obj = document.getElementById(id);
+            const timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current;
+                if (current == end) {
+                    clearInterval(timer);
+                }
+            }, stepTime > 100 ? 100 : stepTime);
+        }
+
+        function renderTables() {
+            const container = document.getElementById('tablesContainer');
+            container.innerHTML = '';
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            for (let i = 1; i <= TABLE_COUNT; i++) {
+                if (i === 4 || i === 14) continue;
+
+                let tableGuests = guests.filter(g => g.tableId === i);
+                if (searchTerm) {
+                    const hasMatch = tableGuests.some(g => g.name.toLowerCase().includes(searchTerm));
+                    if (!hasMatch) continue;
+                }
+
+                const currentHeadcount = tableGuests.reduce((sum, g) => sum + g.size, 0);
+                const isOverCapacity = currentHeadcount > SEATS_PER_TABLE;
+
+                // --- 配色邏輯 ---
+                let headerBg = 'bg-white';
+                let borderColor = 'border-transparent';
+                let titleColor = 'text-gray-800';
+                let subTitle = '';
+                let iconBg = 'bg-gray-100';
+                let iconColor = 'text-gray-500';
+
+                // 第 1 桌：主家席 (金)
+                if (i === 1) {
+                    headerBg = 'bg-gradient-to-r from-wedding-gold/30 to-white';
+                    titleColor = 'text-[#856404]'; 
+                    borderColor = 'border-wedding-gold/50';
+                    subTitle = '<span class="text-xs text-wedding-gold font-bold ml-2">(主家席)</span>';
+                    iconBg = 'bg-wedding-gold/20';
+                    iconColor = 'text-[#856404]';
+                }
+                // 第 2 & 3 桌：長輩席 (紅漸變)
+                else if (i === 2 || i === 3) {
+                    headerBg = 'bg-gradient-to-r from-wedding-red/20 to-pink-50'; // 紅色漸變
+                    titleColor = 'text-wedding-red'; 
+                    borderColor = 'border-wedding-red/30';
+                    iconBg = 'bg-wedding-red/10';
+                    iconColor = 'text-wedding-red';
+                    
+                    if (i === 2) subTitle = '<span class="text-xs text-wedding-red font-bold ml-2">(男家長輩)</span>';
+                    if (i === 3) subTitle = '<span class="text-xs text-wedding-red font-bold ml-2">(女家長輩)</span>';
+                }
+                // 男家 (藍漸變)
+                else if (GROOM_TABLES.includes(i)) {
+                    headerBg = 'bg-gradient-to-r from-blue-100 to-white'; // 藍色漸變
+                    titleColor = 'text-blue-800';
+                    borderColor = 'border-blue-200';
+                    iconBg = 'bg-blue-100';
+                    iconColor = 'text-blue-600';
+                    subTitle = '<span class="text-xs text-blue-500 font-medium ml-2">男家</span>';
+                }
+                // 女家 (粉漸變)
+                else if (BRIDE_TABLES.includes(i)) {
+                    headerBg = 'bg-gradient-to-r from-pink-100 to-white'; // 粉色漸變
+                    titleColor = 'text-pink-800';
+                    borderColor = 'border-pink-200';
+                    iconBg = 'bg-pink-100';
+                    iconColor = 'text-pink-500';
+                    subTitle = '<span class="text-xs text-pink-500 font-medium ml-2">女家</span>';
+                }
+
+                let cardHTML = `
+                    <div class="bg-white rounded-3xl shadow-card overflow-hidden border-2 ${borderColor} transition-all duration-300 hover:shadow-xl">
+                        <div class="p-4 border-b border-gray-100 flex justify-between items-center ${headerBg}">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full ${iconBg} ${iconColor} flex items-center justify-center font-bold text-sm mr-2">
+                                    ${i}
+                                </div>
+                                <h3 class="font-bold text-lg ${titleColor}">第 ${i} 桌${subTitle}</h3>
+                            </div>
+                            <span class="text-xs font-bold ${isOverCapacity ? 'text-red-500' : 'text-gray-400'} bg-gray-50 px-2 py-1 rounded-lg">
+                                <i class="fas fa-users mr-1"></i> ${currentHeadcount}/${SEATS_PER_TABLE}
+                            </span>
+                        </div>
+                        
+                        <div class="p-3 min-h-[80px]">
+                            <div class="flex flex-wrap gap-2">
+                                ${tableGuests.map(guest => {
+                                    const isMatch = searchTerm && guest.name.toLowerCase().includes(searchTerm);
+                                    const opacityClass = searchTerm && !isMatch ? 'opacity-30' : 'opacity-100';
+                                    
+                                    return `
+                                    <div onclick="openCheckInModal(${guest.id})" class="guest-card ${guest.checkedIn ? 'checked-in' : 'bg-gray-50'} ${opacityClass} cursor-pointer group relative border border-gray-100 rounded-xl px-3 py-2 flex items-center transition-all duration-200 hover:scale-105 active:scale-95 w-full sm:w-auto">
+                                        <div class="avatar-box w-8 h-8 rounded-full ${guest.checkedIn ? 'bg-wedding-green text-white' : 'bg-white text-gray-300'} flex items-center justify-center text-xs font-bold mr-3 shadow-sm transition-colors">
+                                            ${guest.checkedIn ? '<i class="fas fa-check"></i>' : (guest.size > 1 ? guest.size : '<i class="fas fa-user"></i>')}
+                                        </div>
+                                        
+                                        <div class="flex-1">
+                                            <div class="text-sm font-bold text-gray-700 leading-tight flex items-center justify-between">
+                                                <span>${guest.name}</span>
+                                            </div>
+                                            ${guest.size > 1 ? `<div class="text-[10px] text-gray-400 font-medium">共 ${guest.size} 位</div>` : ''}
+                                        </div>
+
+                                        ${guest.checkedIn ? '<div class="absolute right-2 top-1/2 transform -translate-y-1/2 text-wedding-green/20 text-4xl -z-0 pointer-events-none"><i class="fas fa-check-circle"></i></div>' : ''}
+                                    </div>
+                                `}).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            }
+        }
+
+        // --- 簽到 Modal 邏輯 ---
+        function openCheckInModal(id) {
+            currentGuestId = id;
+            const guest = guests.find(g => g.id === id);
+            const modal = document.getElementById('checkInModal');
+            const content = document.getElementById('checkInContent');
+            
+            document.getElementById('modalGuestName').innerText = guest.name;
+            document.getElementById('modalGuestTable').innerText = `第 ${guest.tableId} 桌`;
+            document.getElementById('modalGuestSize').innerText = `${guest.size} 人`;
+            
+            updateCheckInBtnUI(guest.checkedIn);
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function updateCheckInBtnUI(checkedIn) {
+            const btn = document.getElementById('checkInBtn');
+            const statusText = document.getElementById('modalStatusText');
+            const avatar = document.getElementById('modalAvatar');
+
+            if (checkedIn) {
+                btn.className = "w-full py-4 rounded-xl font-bold text-lg shadow-lg transform transition-all active:scale-95 flex items-center justify-center gap-2 bg-gray-100 text-gray-500 hover:bg-gray-200";
+                btn.innerHTML = '<i class="fas fa-undo"></i> <span>取消簽到</span>';
+                statusText.innerText = "已簽到";
+                statusText.className = "text-xl font-bold text-green-600";
+                avatar.className = "w-full h-full bg-green-100 rounded-full flex items-center justify-center text-3xl font-bold text-green-600 transition-colors";
+                avatar.innerHTML = '<i class="fas fa-check"></i>';
+            } else {
+                btn.className = "w-full py-4 rounded-xl font-bold text-lg shadow-lg transform transition-all active:scale-95 flex items-center justify-center gap-2 bg-wedding-green text-white shadow-green-200";
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> <span>確認簽到</span>';
+                statusText.innerText = "未簽到";
+                statusText.className = "text-xl font-bold text-gray-400";
+                avatar.className = "w-full h-full bg-gray-100 rounded-full flex items-center justify-center text-3xl font-bold text-gray-400 transition-colors";
+                avatar.innerHTML = '<i class="fas fa-user"></i>';
+            }
+        }
+
+        function toggleCheckIn() {
+            const guest = guests.find(g => g.id === currentGuestId);
+            guest.checkedIn = !guest.checkedIn;
+            updateCheckInBtnUI(guest.checkedIn);
+            renderApp();
+            setTimeout(() => {
+                closeModal();
+            }, 500);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('checkInModal');
+            const content = document.getElementById('checkInContent');
+            
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function setupSearch() {
+            const input = document.getElementById('searchInput');
+            const btn = document.getElementById('clearSearchBtn');
+            input.addEventListener('input', (e) => {
+                if(e.target.value) btn.classList.remove('hidden');
+                else btn.classList.add('hidden');
+                renderTables();
+            });
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderTables();
+        }
     </script>
 </body>
 </html>
