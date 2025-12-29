@@ -101,7 +101,7 @@
 
     <div class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
         
-        <!-- Header: 回歸勃艮第紅 + 香檳金 -->
+        <!-- Header: 勃艮第紅 + 香檳金 -->
         <header class="bg-gradient-to-br from-wedding-red to-wedding-darkRed text-white pt-12 pb-32 px-6 rounded-b-[3rem] shadow-2xl relative z-10 shrink-0 overflow-hidden">
             
             <!-- Header 內部的裝飾暗花 -->
@@ -167,7 +167,7 @@
 
     <!-- Check-in Modal -->
     <div id="checkInModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-6 opacity-0 transition-opacity duration-300">
-        <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 relative" id="checkInContent">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 relative flex flex-col" id="checkInContent">
             
             <!-- Close Button -->
             <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200">
@@ -175,7 +175,7 @@
             </button>
 
             <!-- Top Banner -->
-            <div class="h-32 bg-gradient-to-br from-wedding-red to-wedding-darkRed relative flex items-center justify-center overflow-hidden">
+            <div class="h-32 bg-gradient-to-br from-wedding-red to-wedding-darkRed relative flex items-center justify-center overflow-hidden shrink-0">
                 <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/black-linen.png');"></div>
                 
                 <div class="absolute -bottom-8 w-20 h-20 bg-white rounded-full p-1.5 shadow-lg z-10">
@@ -186,9 +186,33 @@
             </div>
 
             <!-- Content -->
-            <div class="pt-12 pb-8 px-6 text-center">
+            <div class="pt-12 pb-8 px-6 text-center flex-1 flex flex-col">
                 <h2 class="text-2xl font-bold text-gray-800 mb-1" id="modalGuestName">Guest Name</h2>
-                <p class="text-sm text-gray-500 mb-6 font-medium" id="modalGuestTable">Table X</p>
+                <p class="text-sm text-gray-500 mb-4 font-medium" id="modalGuestTable">Table X</p>
+
+                <!-- 喜帖提示區域 -->
+                
+                <!-- 1. 未領喜帖提示 (預設隱藏) -->
+                <div id="noInvitationAlert" class="hidden mb-4 bg-red-50 border-l-4 border-wedding-red rounded-r-xl p-4 shadow-sm animate-pulse">
+                    <div class="flex flex-col items-center justify-center text-wedding-red">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="fas fa-envelope text-xl"></i>
+                            <span class="font-bold text-lg">請轉交喜帖一張</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-red-100 shadow-sm w-full justify-center">
+                            <input type="checkbox" id="invitationCheck" class="w-5 h-5 text-wedding-red rounded focus:ring-wedding-red" onchange="toggleConfirmButton()">
+                            <label for="invitationCheck" class="text-sm font-bold text-gray-700 cursor-pointer select-none">我已轉交喜帖</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 已領喜帖標籤 (預設隱藏) -->
+                <div id="hasInvitationBadge" class="hidden mb-6">
+                    <div class="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold text-sm border border-green-200 shadow-sm">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                        <span>已領取喜帖</span>
+                    </div>
+                </div>
 
                 <!-- Info Cards -->
                 <div class="grid grid-cols-2 gap-3 mb-8">
@@ -203,7 +227,7 @@
                 </div>
 
                 <!-- Action Button -->
-                <button id="checkInBtn" onclick="toggleCheckIn()" class="w-full py-4 rounded-xl font-bold text-lg shadow-lg transform transition-all active:scale-95 flex items-center justify-center gap-2">
+                <button id="checkInBtn" onclick="toggleCheckIn()" class="w-full py-4 rounded-xl font-bold text-lg shadow-lg transform transition-all active:scale-95 flex items-center justify-center gap-2 mt-auto disabled:opacity-50 disabled:cursor-not-allowed">
                     <!-- Icon & Text injected by JS -->
                 </button>
                 
@@ -214,12 +238,10 @@
 
     <script>
         // --- 數據設置 ---
-        // 總桌數設定為19桌 (根據PDF最大桌號)
         const TABLE_COUNT = 19; 
         const SEATS_PER_TABLE = 12; // 預設每桌12人
         
-        // 桌號分類資訊 (根據最新的 PDF 副本(3) 更新)
-        // 顏色代碼: "gold" (主家), "red" (長輩), "blue" (男家), "pink" (女家)
+        // 桌號分類資訊
         const TABLE_INFO = {
             1: { title: "主家席", color: "gold" },
             2: { title: "男家長輩", color: "red" },
@@ -227,7 +249,7 @@
             5: { title: "女家親戚", color: "pink" },
             6: { title: "男家朋友", color: "blue" },
             7: { title: "男家朋友", color: "blue" },
-            8: { title: "女家朋友", color: "pink" },
+            8: { title: "女家親戚", color: "pink" },
             9: { title: "女家朋友", color: "pink" },
             10: { title: "男家朋友", color: "blue" },
             11: { title: "男家朋友", color: "blue" },
@@ -240,125 +262,158 @@
             19: { title: "男家朋友", color: "blue" }
         };
 
-        // 原始數據 (根據上傳的 Wedding plan - 「GUEST LIST」的副本 (3).pdf 更新)
+        // 數據源：hasInvitation: true (已發), false (黑色字, 未發-需顯示提示)
+        // 根據您的最新指示更新狀態
         let rawGuests = [
-            // Table 1: 主家席
-            { name: "新郎媽媽", tableId: 1 },
-            { name: "新郎姨丈(+新郎姨媽,新郎表哥,新郎表姐)", tableId: 1, manualSize: 4 },
-            { name: "吳生(Mr Roger Ng)+吳太(Ms Amy Leung)", tableId: 1, manualSize: 2 },
-            { name: "新郎表姨(Shirley Hui)(+表姨丈)", tableId: 1, manualSize: 2 },
-            { name: "新郎大舅父 (Steven Hui) (+舅母)", tableId: 1, manualSize: 2 },
-            { name: "新郎舅父(Stanley Hui) (+舅母)", tableId: 1, manualSize: 2 },
-            { name: "胡生(+許小姐+胡超文)", tableId: 1, manualSize: 3 },
-            { name: "永高老叔(+老嬸)", tableId: 1, manualSize: 2 },
-            { name: "新郎", tableId: 1 },
-            { name: "新娘", tableId: 1 },
+            // Table 1 (主家席)
+            // 新郎媽媽 (已收)
+            { name: "新郎媽媽", tableId: 1, hasInvitation: true },
+            { name: "新郎姨丈(+新郎姨媽,新郎表哥,新郎表姐)", tableId: 1, manualSize: 4, hasInvitation: false },
+            // 吳生+吳太 (已收)
+            { name: "吳生(Mr Roger Ng)+吳太(Ms Amy Leung)", tableId: 1, manualSize: 2, hasInvitation: true },
+            { name: "新郎表姨(Shirley Hui)(+表姨丈)", tableId: 1, manualSize: 2, hasInvitation: false },
+            { name: "新郎大舅父 (Steven Hui) (+舅母)", tableId: 1, manualSize: 2, hasInvitation: false },
+            { name: "新郎舅父(Stanley Hui) (+舅母)", tableId: 1, manualSize: 2, hasInvitation: false },
+            { name: "胡生(+許小姐+胡超文)", tableId: 1, manualSize: 3, hasInvitation: false },
+            // 永高老叔+老嬸 (已收)
+            { name: "永高老叔(+老嬸)", tableId: 1, manualSize: 2, hasInvitation: true },
+            { name: "新郎", tableId: 1, hasInvitation: true }, // 新人已收
+            { name: "新娘", tableId: 1, hasInvitation: true }, // 新人已收
             
-            // Table 2: 男家長輩
-            { name: "文昭舅舅(+舅母)", tableId: 2, manualSize: 2 },
-            { name: "炯强舅舅(+舅母)", tableId: 2, manualSize: 2 },
-            { name: "耀彬舅舅(+舅母)", tableId: 2, manualSize: 2 },
-            { name: "基茂舅舅", tableId: 2 },
-            { name: "盛少英(+林先生)", tableId: 2, manualSize: 2 },
-            { name: "劉劍文(+劉太)", tableId: 2, manualSize: 2 },
+            // Table 2 (男家長輩)
+            { name: "文昭舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false },
+            { name: "炯强舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false },
+            { name: "耀彬舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false },
+            { name: "基茂舅舅", tableId: 2, hasInvitation: false },
+            { name: "盛少英(+林先生)", tableId: 2, manualSize: 2, hasInvitation: true },
+            { name: "劉劍文(+劉太)", tableId: 2, manualSize: 2, hasInvitation: true },
 
-            // Table 3: 女家長輩 (Updated)
-            { name: "新娘爸爸", tableId: 3 }, { name: "新娘媽媽", tableId: 3 }, { name: "新娘嫲嫲", tableId: 3 },
-            { name: "新娘外公", tableId: 3 }, { name: "倩兒姨婆", tableId: 3 }, { name: "錫生舅公", tableId: 3 },
-            { name: "麗兒姨婆", tableId: 3 }, { name: "燕兒姨婆", tableId: 3 }, { name: "天虹姑婆", tableId: 3 },
-            { name: "曉虹姑婆", tableId: 3 }, { name: "區清姨婆", tableId: 3 }, { name: "梅冰姨公", tableId: 3 },
+            // Table 3 (女家長輩 - 全部已收)
+            { name: "新娘爸爸", tableId: 3, hasInvitation: true }, 
+            { name: "新娘媽媽", tableId: 3, hasInvitation: true }, 
+            { name: "新娘嫲嫲", tableId: 3, hasInvitation: true },
+            { name: "新娘外公", tableId: 3, hasInvitation: true }, 
+            { name: "倩兒姨婆", tableId: 3, hasInvitation: true }, { name: "錫生舅公", tableId: 3, hasInvitation: true },
+            { name: "麗兒姨婆", tableId: 3, hasInvitation: true }, { name: "燕兒姨婆", tableId: 3, hasInvitation: true }, 
+            { name: "天虹姑婆", tableId: 3, hasInvitation: true }, { name: "曉虹姑婆", tableId: 3, hasInvitation: true }, 
+            { name: "區清姨婆", tableId: 3, hasInvitation: true }, { name: "梅冰姨公", tableId: 3, hasInvitation: true },
 
-            // Table 5: 女家親戚 (Updated)
-            { name: "徐偉舅舅", tableId: 5 }, { name: "Reiki", tableId: 5 }, 
-            { name: "傅先生全家(+5位)", tableId: 5, manualSize: 6 },
-            { name: "王向紅", tableId: 5 }, { name: "吳承菊", tableId: 5 }, { name: "吳起恕", tableId: 5 },
+            // Table 5 (女家親戚)
+            { name: "徐偉舅舅", tableId: 5, hasInvitation: false }, { name: "Reiki", tableId: 5, hasInvitation: false }, 
+            { name: "傅先生全家(+5位)", tableId: 5, manualSize: 6, hasInvitation: false },
+            { name: "王向紅", tableId: 5, hasInvitation: true }, 
+            { name: "吳承菊", tableId: 5, hasInvitation: true }, 
+            { name: "吳起恕", tableId: 5, hasInvitation: true },
 
-            // Table 6: 男家朋友
-            { name: "綺華", tableId: 6 }, { name: "錦鑾", tableId: 6 }, { name: "佩華", tableId: 6 },
-            { name: "淑華", tableId: 6 }, { name: "宋吟", tableId: 6 }, { name: "燕芬", tableId: 6 },
-            { name: "玉娥", tableId: 6 }, { name: "姚晴萱", tableId: 6 }, { name: "姚澤彬", tableId: 6 },
-            { name: "劉子鈞(+3位)", tableId: 6, manualSize: 4 },
+            // Table 6 (男家朋友)
+            { name: "綺華", tableId: 6, hasInvitation: true }, { name: "錦鑾", tableId: 6, hasInvitation: true }, 
+            { name: "佩華", tableId: 6, hasInvitation: true }, { name: "淑華", tableId: 6, hasInvitation: true }, 
+            { name: "宋吟", tableId: 6, hasInvitation: true }, { name: "燕芬", tableId: 6, hasInvitation: true },
+            { name: "玉娥", tableId: 6, hasInvitation: true }, { name: "姚晴萱", tableId: 6, hasInvitation: true }, 
+            { name: "姚澤彬", tableId: 6, hasInvitation: true }, { name: "劉子鈞(+3位)", tableId: 6, manualSize: 4, hasInvitation: true },
 
-            // Table 7: 男家朋友
-            { name: "吳总", tableId: 7 }, { name: "Carly Ng", tableId: 7 }, 
-            { name: "徐生", tableId: 7 }, { name: "Stephanus (+4)", tableId: 7, manualSize: 5 },
-            { name: "Roberto (+1)", tableId: 7, manualSize: 2 },
-            { name: "徐總", tableId: 7 }, { name: "Jimmy", tableId: 7 },
+            // Table 7 (男家朋友)
+            // 徐總, Jimmy (已收)
+            { name: "吳总", tableId: 7, hasInvitation: true }, { name: "Carly Ng", tableId: 7, hasInvitation: true }, 
+            { name: "徐生", tableId: 7, hasInvitation: true }, { name: "Stephanus (+4)", tableId: 7, manualSize: 5, hasInvitation: true },
+            { name: "Roberto (+1)", tableId: 7, manualSize: 2, hasInvitation: true },
+            { name: "徐總", tableId: 7, hasInvitation: true }, { name: "Jimmy", tableId: 7, hasInvitation: true },
 
-            // Table 8: 女家朋友 (Updated)
-            { name: "梅士平叔叔", tableId: 8 }, { name: "燕華嬸嬸", tableId: 8 }, { name: "玟鏵姑姐", tableId: 8 },
-            { name: "海歐叔叔", tableId: 8 }, { name: "黃沛瑜", tableId: 8 }, 
-            { name: "黃海洋(+1位)", tableId: 8, manualSize: 2 }, 
-            { name: "斌毅舅舅全家(+2位)", tableId: 8, manualSize: 3 }, 
-            { name: "Alex Wong", tableId: 8 }, { name: "Jack Wong", tableId: 8 },
+            // Table 8 (女家親戚)
+            { name: "梅士平叔叔", tableId: 8, hasInvitation: false }, { name: "燕華嬸嬸", tableId: 8, hasInvitation: false }, 
+            { name: "玟鏵姑姐", tableId: 8, hasInvitation: false }, { name: "海歐叔叔", tableId: 8, hasInvitation: false }, 
+            { name: "黃沛瑜", tableId: 8, hasInvitation: false }, 
+            { name: "黃海洋(+1位)", tableId: 8, manualSize: 2, hasInvitation: false }, 
+            { name: "斌毅舅舅全家(+2位)", tableId: 8, manualSize: 3, hasInvitation: true }, 
+            { name: "Alex Wong", tableId: 8, hasInvitation: true }, { name: "Jack Wong", tableId: 8, hasInvitation: true },
 
-            // Table 9: 女家朋友
-            { name: "Leila", tableId: 9 }, { name: "Ana", tableId: 9 }, { name: "Gavin", tableId: 9 },
-            { name: "Davina", tableId: 9 }, { name: "Catherine", tableId: 9 }, { name: "Lemon", tableId: 9 },
-            { name: "Nora", tableId: 9 }, { name: "Brian", tableId: 9 }, { name: "Kiki", tableId: 9 },
-            { name: "Jorie", tableId: 9 }, { name: "Yichen", tableId: 9 }, { name: "Katia", tableId: 9 },
+            // Table 9 (女家朋友)
+            { name: "Leila", tableId: 9, hasInvitation: true }, { name: "Ana", tableId: 9, hasInvitation: true }, 
+            { name: "Gavin", tableId: 9, hasInvitation: true }, { name: "Davina", tableId: 9, hasInvitation: true }, 
+            { name: "Catherine", tableId: 9, hasInvitation: true }, { name: "Lemon", tableId: 9, hasInvitation: true },
+            { name: "Nora", tableId: 9, hasInvitation: true }, { name: "Brian", tableId: 9, hasInvitation: true }, 
+            { name: "Kiki", tableId: 9, hasInvitation: true }, { name: "Jorie", tableId: 9, hasInvitation: true }, 
+            { name: "Yichen", tableId: 9, hasInvitation: true }, { name: "Katia", tableId: 9, hasInvitation: true },
 
-            // Table 10: 男家朋友 (UPDATED - Swapped with 11)
-            { name: "大眼仔2", tableId: 10, manualSize: 2 }, 
-            { name: "Ng Ming Kin(+3位)", tableId: 10, manualSize: 4 }, 
-            { name: "Sunkist Sit", tableId: 10 },
-            { name: "陳凱偉", tableId: 10 }, 
-            { name: "黃國翹(+1位)", tableId: 10, manualSize: 2 }, 
-            { name: "方齊發(+1位)", tableId: 10, manualSize: 2 },
+            // Table 10 (男家朋友)
+            // 陳凱偉 (已收)
+            { name: "大眼仔2", tableId: 10, manualSize: 2, hasInvitation: true }, 
+            { name: "Ng Ming Kin(+3位)", tableId: 10, manualSize: 4, hasInvitation: true }, 
+            { name: "Sunkist Sit", tableId: 10, hasInvitation: true },
+            { name: "陳凱偉", tableId: 10, hasInvitation: true }, 
+            { name: "黃國翹(+1位)", tableId: 10, manualSize: 2, hasInvitation: true }, 
+            { name: "方齊發(+1位)", tableId: 10, manualSize: 2, hasInvitation: true },
 
-            // Table 11: 男家朋友 (UPDATED - Swapped with 10)
-            { name: "Sammi", tableId: 11 }, { name: "Crystal", tableId: 11 }, { name: "Michelle", tableId: 11 },
-            { name: "Joe Lo", tableId: 11 }, { name: "Winky Chau", tableId: 11 }, 
-            { name: "鄭國鏘(+3位)", tableId: 11, manualSize: 4 },
-            { name: "Kathy Keh", tableId: 11 }, { name: "Kayleen Keh", tableId: 11 }, { name: "Miyuki sze", tableId: 11 },
+            // Table 11 (男家朋友)
+            // Sammi, Crystal, Michelle, Joe Lo (已收)
+            { name: "Sammi", tableId: 11, hasInvitation: true }, { name: "Crystal", tableId: 11, hasInvitation: true }, 
+            { name: "Michelle", tableId: 11, hasInvitation: true }, { name: "Joe Lo", tableId: 11, hasInvitation: true }, 
+            { name: "Winky Chau", tableId: 11, hasInvitation: false }, 
+            { name: "鄭國鏘(+3位)", tableId: 11, manualSize: 4, hasInvitation: true },
+            { name: "Kathy Keh", tableId: 11, hasInvitation: false }, { name: "Kayleen Keh", tableId: 11, hasInvitation: false }, 
+            { name: "Miyuki sze", tableId: 11, hasInvitation: false },
 
-            // Table 12: 女家朋友
-            { name: "Phoebe", tableId: 12 }, { name: "Tingting", tableId: 12 }, { name: "Darren", tableId: 12 },
-            { name: "Chris", tableId: 12 }, { name: "Siann", tableId: 12 }, { name: "Miror", tableId: 12 },
-            { name: "KC", tableId: 12 }, { name: "Brian", tableId: 12 }, { name: "Wilson", tableId: 12 },
-            { name: "Andy", tableId: 12 }, { name: "Anthony", tableId: 12 }, { name: "justin", tableId: 12 },
+            // Table 12 (女家朋友)
+            { name: "Phoebe", tableId: 12, hasInvitation: true }, { name: "Tingting", tableId: 12, hasInvitation: true }, 
+            { name: "Darren", tableId: 12, hasInvitation: true }, { name: "Chris", tableId: 12, hasInvitation: true }, 
+            { name: "Siann", tableId: 12, hasInvitation: true }, { name: "Miror", tableId: 12, hasInvitation: true },
+            { name: "KC", tableId: 12, hasInvitation: true }, { name: "Brian", tableId: 12, hasInvitation: true }, 
+            { name: "Wilson", tableId: 12, hasInvitation: true }, { name: "Andy", tableId: 12, hasInvitation: true }, 
+            { name: "Anthony", tableId: 12, hasInvitation: true }, { name: "justin", tableId: 12, hasInvitation: true },
 
-            // Table 13: 女家朋友 (Updated)
-            { name: "Kelly(+3位)", tableId: 13, manualSize: 4 }, 
-            { name: "Lancy", tableId: 13 }, { name: "Betty", tableId: 13 }, 
-            { name: "Lauren (+1位)", tableId: 13, manualSize: 2 }, 
-            { name: "Linda Pak (+2位)", tableId: 13, manualSize: 3 },
+            // Table 13 (女家朋友)
+            { name: "Kelly(+3位)", tableId: 13, manualSize: 4, hasInvitation: true }, 
+            { name: "Lancy", tableId: 13, hasInvitation: false }, { name: "Betty", tableId: 13, hasInvitation: false }, 
+            { name: "Lauren (+1位)", tableId: 13, manualSize: 2, hasInvitation: false }, 
+            { name: "Linda Pak (+2位)", tableId: 13, manualSize: 3, hasInvitation: false },
 
-            // Table 15: 男家朋友
-            { name: "Jason Wong", tableId: 15 }, { name: "Wiliam Wong", tableId: 15 }, { name: "James Lo", tableId: 15 },
-            { name: "Nik Po", tableId: 15 }, { name: "林霞", tableId: 15 }, { name: "凌生", tableId: 15 },
-            { name: "張天永", tableId: 15 }, { name: "林生(2位)", tableId: 15, manualSize: 2 }, { name: "劉总", tableId: 15 },
-            { name: "Sanda Tsang", tableId: 15 }, { name: "Lala", tableId: 15 },
+            // Table 15 (男家朋友)
+            // Jason Wong, Wiliam Wong, James Lo, Nik Po, 林霞, 凌生, 林生, 劉总, Sanda Tsang, Lala (已收)
+            { name: "Jason Wong", tableId: 15, hasInvitation: true }, { name: "Wiliam Wong", tableId: 15, hasInvitation: true }, 
+            { name: "James Lo", tableId: 15, hasInvitation: true }, { name: "Nik Po", tableId: 15, hasInvitation: true }, 
+            { name: "林霞", tableId: 15, hasInvitation: true }, { name: "凌生", tableId: 15, hasInvitation: true },
+            { name: "張天永", tableId: 15, hasInvitation: false }, 
+            { name: "林生(2位)", tableId: 15, manualSize: 2, hasInvitation: true }, 
+            { name: "劉总", tableId: 15, hasInvitation: true },
+            { name: "Sanda Tsang", tableId: 15, hasInvitation: true }, { name: "Lala", tableId: 15, hasInvitation: true },
 
-            // Table 16: 男家朋友
-            { name: "暢(兒子)", tableId: 16 }, { name: "葉堡琛", tableId: 16 }, { name: "劉子軒(3位)", tableId: 16, manualSize: 3 },
-            { name: "林綺婷", tableId: 16 }, { name: "朱岸南", tableId: 16 }, { name: "Dicky Cheung", tableId: 16 },
-            { name: "Karen Law", tableId: 16 }, { name: "范嘉俊", tableId: 16 }, { name: "任旭陽", tableId: 16 },
-            { name: "Rannie Yu", tableId: 16 },
+            // Table 16 (男家朋友)
+            // Rannie Yu (已收)
+            { name: "暢(兒子)", tableId: 16, hasInvitation: true }, { name: "葉堡琛", tableId: 16, hasInvitation: true }, 
+            { name: "劉子軒(3位)", tableId: 16, manualSize: 3, hasInvitation: true },
+            { name: "林綺婷", tableId: 16, hasInvitation: true }, { name: "朱岸南", tableId: 16, hasInvitation: true }, 
+            { name: "Dicky Cheung", tableId: 16, hasInvitation: true }, { name: "Karen Law", tableId: 16, hasInvitation: true }, 
+            { name: "范嘉俊", tableId: 16, hasInvitation: true }, { name: "任旭陽", tableId: 16, hasInvitation: true },
+            { name: "Rannie Yu", tableId: 16, hasInvitation: true },
 
-            // Table 17: 女家朋友
-            { name: "Denise", tableId: 17 }, { name: "Leo", tableId: 17 }, { name: "Gloria", tableId: 17 },
-            { name: "Mackie", tableId: 17 }, { name: "Brina", tableId: 17 }, { name: "Ashley", tableId: 17 },
-            { name: "Shiiko", tableId: 17 }, { name: "Jaye", tableId: 17 }, { name: "Cheryl", tableId: 17 },
-            { name: "Betsy", tableId: 17 }, { name: "Joe", tableId: 17 }, { name: "Pakki", tableId: 17 },
+            // Table 17 (女家朋友)
+            { name: "Denise", tableId: 17, hasInvitation: true }, { name: "Leo", tableId: 17, hasInvitation: true }, 
+            { name: "Gloria", tableId: 17, hasInvitation: true }, { name: "Mackie", tableId: 17, hasInvitation: true }, 
+            { name: "Brina", tableId: 17, hasInvitation: true }, { name: "Ashley", tableId: 17, hasInvitation: true },
+            { name: "Shiiko", tableId: 17, hasInvitation: true }, { name: "Jaye", tableId: 17, hasInvitation: false }, 
+            { name: "Cheryl", tableId: 17, hasInvitation: false }, { name: "Betsy", tableId: 17, hasInvitation: false }, 
+            { name: "Joe", tableId: 17, hasInvitation: false }, { name: "Pakki", tableId: 17, hasInvitation: false },
 
-            // Table 18: 男家朋友
-            { name: "Crystal", tableId: 18 }, { name: "Ada", tableId: 18 }, { name: "Angel", tableId: 18 },
-            { name: "Celia", tableId: 18 }, { name: "Siu Yuk", tableId: 18 }, { name: "Momoco", tableId: 18 },
-            { name: "Alison", tableId: 18 }, { name: "陳嘉安", tableId: 18 }, { name: "John", tableId: 18 },
-            { name: "Or fu", tableId: 18 },
+            // Table 18 (男家朋友)
+            { name: "Crystal", tableId: 18, hasInvitation: true }, { name: "Ada", tableId: 18, hasInvitation: true }, 
+            { name: "Angel", tableId: 18, hasInvitation: true }, { name: "Celia", tableId: 18, hasInvitation: true }, 
+            { name: "Siu Yuk", tableId: 18, hasInvitation: true }, { name: "Momoco", tableId: 18, hasInvitation: true },
+            { name: "Alison", tableId: 18, hasInvitation: true }, { name: "陳嘉安", tableId: 18, hasInvitation: true }, 
+            { name: "John", tableId: 18, hasInvitation: true }, { name: "Or fu", tableId: 18, hasInvitation: true },
 
-            // Table 19: 男家朋友
-            { name: "Kelvin Li", tableId: 19 }, { name: "Matt", tableId: 19 }, { name: "Hayley", tableId: 19 },
-            { name: "Ivy", tableId: 19 }, { name: "Ting fung", tableId: 19 }, { name: "Roxanne", tableId: 19 },
-            { name: "Gigi", tableId: 19 }, { name: "Bonnie", tableId: 19 }, { name: "Vicky", tableId: 19 },
-            { name: "Moon", tableId: 19 }, { name: "Sandra", tableId: 19 }, { name: "Cling", tableId: 19 },
+            // Table 19 (男家朋友)
+            // Kelvin Li, Matt, Hayley, Ivy, Ting fung, Roxanne, Gigi, Bonnie, Vicky, Moon, Sandra, Cling (全部已收)
+            { name: "Kelvin Li", tableId: 19, hasInvitation: true }, { name: "Matt", tableId: 19, hasInvitation: true }, 
+            { name: "Hayley", tableId: 19, hasInvitation: true }, { name: "Ivy", tableId: 19, hasInvitation: true }, 
+            { name: "Ting fung", tableId: 19, hasInvitation: true }, { name: "Roxanne", tableId: 19, hasInvitation: true },
+            { name: "Gigi", tableId: 19, hasInvitation: true }, { name: "Bonnie", tableId: 19, hasInvitation: true }, 
+            { name: "Vicky", tableId: 19, hasInvitation: true }, { name: "Moon", tableId: 19, hasInvitation: true }, 
+            { name: "Sandra", tableId: 19, hasInvitation: true }, { name: "Cling", tableId: 19, hasInvitation: true },
         ];
 
         let guests = [];
         let currentGuestId = null;
 
-        // --- 初始化與邏輯 ---
         document.addEventListener('DOMContentLoaded', () => {
             initGuests();
             renderApp();
@@ -391,7 +446,9 @@
                     name: g.name,
                     tableId: g.tableId,
                     size: size,
-                    checkedIn: false
+                    checkedIn: false,
+                    // 確保 hasInvitation 有預設值，未定義則視為 false (黑色字)
+                    hasInvitation: g.hasInvitation === true 
                 };
             });
         }
@@ -546,12 +603,46 @@
             const guest = guests.find(g => g.id === id);
             const modal = document.getElementById('checkInModal');
             const content = document.getElementById('checkInContent');
+            const noInvitationAlert = document.getElementById('noInvitationAlert');
+            const hasInvitationBadge = document.getElementById('hasInvitationBadge');
+            const invitationCheck = document.getElementById('invitationCheck');
+            const checkInBtn = document.getElementById('checkInBtn');
             
             document.getElementById('modalGuestName').innerText = guest.name;
             document.getElementById('modalGuestTable').innerText = `第 ${guest.tableId} 桌`;
             document.getElementById('modalGuestSize').innerText = `${guest.size} 人`;
             
-            updateCheckInBtnUI(guest.checkedIn);
+            // 重置 checkbox 狀態
+            invitationCheck.checked = false;
+
+            // 邏輯: 
+            // 1. 如果已簽到，不顯示喜帖提示，顯示「取消簽到」按鈕
+            // 2. 如果未簽到:
+            //    a. hasInvitation = true: 顯示綠色標籤，按鈕可用
+            //    b. hasInvitation = false: 顯示紅色提示+checkbox，按鈕禁用 (直到勾選)
+            
+            if (guest.checkedIn) {
+                noInvitationAlert.classList.add('hidden');
+                hasInvitationBadge.classList.add('hidden');
+                checkInBtn.disabled = false;
+                checkInBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                updateCheckInBtnUI(true);
+            } else {
+                if (guest.hasInvitation) {
+                    // 已領喜帖
+                    noInvitationAlert.classList.add('hidden');
+                    hasInvitationBadge.classList.remove('hidden');
+                    checkInBtn.disabled = false;
+                    checkInBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    // 未領喜帖
+                    noInvitationAlert.classList.remove('hidden');
+                    hasInvitationBadge.classList.add('hidden');
+                    checkInBtn.disabled = true; // 鎖定按鈕
+                    checkInBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+                updateCheckInBtnUI(false);
+            }
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -562,20 +653,36 @@
             }, 10);
         }
 
+        // checkbox 變更事件
+        function toggleConfirmButton() {
+            const checkInBtn = document.getElementById('checkInBtn');
+            const checkbox = document.getElementById('invitationCheck');
+            
+            if (checkbox.checked) {
+                checkInBtn.disabled = false;
+                checkInBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                checkInBtn.disabled = true;
+                checkInBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
         function updateCheckInBtnUI(checkedIn) {
             const btn = document.getElementById('checkInBtn');
             const statusText = document.getElementById('modalStatusText');
             const avatar = document.getElementById('modalAvatar');
 
             if (checkedIn) {
-                btn.className = "w-full py-4 rounded-xl font-bold text-lg shadow-lg transform transition-all active:scale-95 flex items-center justify-center gap-2 bg-gray-100 text-gray-500 hover:bg-gray-200";
+                btn.className = "w-full py-4 rounded-xl font-bold text-lg shadow-lg transform transition-all active:scale-95 flex items-center justify-center gap-2 bg-gray-100 text-gray-500 hover:bg-gray-200 mt-auto";
                 btn.innerHTML = '<i class="fas fa-undo"></i> <span>取消簽到</span>';
                 statusText.innerText = "已簽到";
                 statusText.className = "text-xl font-bold text-green-600";
                 avatar.className = "w-full h-full bg-green-100 rounded-full flex items-center justify-center text-3xl font-bold text-green-600 transition-colors";
                 avatar.innerHTML = '<i class="fas fa-check"></i>';
             } else {
-                btn.className = "w-full py-4 rounded-xl font-bold text-lg shadow-lg transform transition-all active:scale-95 flex items-center justify-center gap-2 bg-wedding-green text-white shadow-green-200";
+                // 按鈕樣式由 openCheckInModal 中的 disabled 屬性控制透明度
+                // 這裡只設定基本的啟用樣式 (顏色)
+                btn.className = "w-full py-4 rounded-xl font-bold text-lg shadow-lg transform transition-all active:scale-95 flex items-center justify-center gap-2 bg-wedding-green text-white shadow-green-200 mt-auto disabled:opacity-50 disabled:cursor-not-allowed";
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> <span>確認簽到</span>';
                 statusText.innerText = "未簽到";
                 statusText.className = "text-xl font-bold text-gray-400";
@@ -587,8 +694,14 @@
         function toggleCheckIn() {
             const guest = guests.find(g => g.id === currentGuestId);
             guest.checkedIn = !guest.checkedIn;
+            
+            // 如果是剛完成簽到，且原本是未領喜帖者，視為已領取 (更新狀態以免取消後再簽到又要勾選)
+            // 不過為了保險，這裡暫不永久修改 hasInvitation，只處理當次簽到邏輯
+            
             updateCheckInBtnUI(guest.checkedIn);
             renderApp();
+            
+            // 延遲關閉
             setTimeout(() => {
                 closeModal();
             }, 500);
