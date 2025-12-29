@@ -55,8 +55,6 @@
             z-index: -1;
             /* 使用淡雅的花卉線條圖案 */
             background-image: url('https://img.freepik.com/free-vector/hand-drawn-minimal-background_23-2148999829.jpg?w=1380&t=st=1703600000~exp=1703600600~hmac=fake_signature');
-            /* Fallback or alternative elegant pattern */
-            background-image: url('https://img.freepik.com/free-vector/seamless-pattern-with-hand-drawn-flowers_23-2148055845.jpg');
             background-size: 400px; /* 調整圖案大小 */
             background-repeat: repeat;
             opacity: 0.08; /* 非常淡的透明度 */
@@ -220,7 +218,7 @@
         const TABLE_COUNT = 19; 
         const SEATS_PER_TABLE = 12; // 預設每桌12人
         
-        // 桌號分類資訊 (根據PDF更新)
+        // 桌號分類資訊 (根據最新的 PDF 副本(3) 更新)
         // 顏色代碼: "gold" (主家), "red" (長輩), "blue" (男家), "pink" (女家)
         const TABLE_INFO = {
             1: { title: "主家席", color: "gold" },
@@ -242,7 +240,7 @@
             19: { title: "男家朋友", color: "blue" }
         };
 
-        // 原始數據 (根據上傳的 Wedding plan PDF 更新)
+        // 原始數據 (根據上傳的 Wedding plan - 「GUEST LIST」的副本 (3).pdf 更新)
         let rawGuests = [
             // Table 1: 主家席
             { name: "新郎媽媽", tableId: 1 },
@@ -264,36 +262,35 @@
             { name: "盛少英(+林先生)", tableId: 2, manualSize: 2 },
             { name: "劉劍文(+劉太)", tableId: 2, manualSize: 2 },
 
-            // Table 3: 女家長輩
-            { name: "Linda Wu", tableId: 3 }, { name: "胡天虹", tableId: 3 }, { name: "胡秋虹", tableId: 3 },
-            { name: "胡曉虹", tableId: 3 }, { name: "李燕兒", tableId: 3 }, { name: "李秀兒", tableId: 3 },
-            { name: "李倩兒", tableId: 3 }, { name: "李錫生", tableId: 3 }, { name: "李麗兒", tableId: 3 },
-            { name: "區清", tableId: 3 }, { name: "梅冰", tableId: 3 }, { name: "George Yeung", tableId: 3 },
+            // Table 3: 女家長輩 (Updated)
+            { name: "新娘爸爸", tableId: 3 }, { name: "新娘媽媽", tableId: 3 }, { name: "新娘嫲嫲", tableId: 3 },
+            { name: "新娘外公", tableId: 3 }, { name: "倩兒姨婆", tableId: 3 }, { name: "錫生舅公", tableId: 3 },
+            { name: "麗兒姨婆", tableId: 3 }, { name: "燕兒姨婆", tableId: 3 }, { name: "天虹姑婆", tableId: 3 },
+            { name: "曉虹姑婆", tableId: 3 }, { name: "區清姨婆", tableId: 3 }, { name: "梅冰姨公", tableId: 3 },
 
-            // Table 5: 女家親戚 (Skipped Table 4)
-            { name: "徐偉", tableId: 5 }, { name: "徐瑞儀", tableId: 5 }, 
-            { name: "傅先生全家(+5位)", tableId: 5, manualSize: 6 }, // "全家"通常是1位 + 5位 = 6位，或本身代表1位+5，此處假設全家為1個單位+5位
+            // Table 5: 女家親戚 (Updated)
+            { name: "徐偉舅舅", tableId: 5 }, { name: "Reiki", tableId: 5 }, 
+            { name: "傅先生全家(+5位)", tableId: 5, manualSize: 6 },
             { name: "王向紅", tableId: 5 }, { name: "吳承菊", tableId: 5 }, { name: "吳起恕", tableId: 5 },
 
             // Table 6: 男家朋友
             { name: "綺華", tableId: 6 }, { name: "錦鑾", tableId: 6 }, { name: "佩華", tableId: 6 },
             { name: "淑華", tableId: 6 }, { name: "宋吟", tableId: 6 }, { name: "燕芬", tableId: 6 },
             { name: "玉娥", tableId: 6 }, { name: "姚晴萱", tableId: 6 }, { name: "姚澤彬", tableId: 6 },
-            { name: "劉子鈞(+3位)", tableId: 6, manualSize: 4 }, // 1+3
+            { name: "劉子鈞(+3位)", tableId: 6, manualSize: 4 },
 
             // Table 7: 男家朋友
             { name: "吳总", tableId: 7 }, { name: "Carly Ng", tableId: 7 }, 
-            { name: "徐生", tableId: 7 }, { name: "Stephanus (+4)", tableId: 7, manualSize: 5 }, // 1+4
-            { name: "Roberto (+1)", tableId: 7, manualSize: 2 }, // 1+1
+            { name: "徐生", tableId: 7 }, { name: "Stephanus (+4)", tableId: 7, manualSize: 5 },
+            { name: "Roberto (+1)", tableId: 7, manualSize: 2 },
             { name: "徐總", tableId: 7 }, { name: "Jimmy", tableId: 7 },
 
-            // Table 8: 女家朋友
-            { name: "蔡總全家(+2位)", tableId: 8, manualSize: 3 }, // 1+2
-            { name: "梅士平伉儷(+1位)", tableId: 8, manualSize: 3 }, // 伉儷2人 + 1位? 或是伉儷=1單位+1? 根據前文邏輯通常是1單位代表2人，這裡(+1位)可能是額外小孩。若"梅士平伉儷"是一張卡片，算2人，再+1=3。或者"梅士平伉儷"是一個人名+配偶，算2人。若寫(+1位)可能是共3人。這裡暫定為3人。
-            { name: "李玟鏵", tableId: 8 }, 
+            // Table 8: 女家朋友 (Updated)
+            { name: "梅士平叔叔", tableId: 8 }, { name: "燕華嬸嬸", tableId: 8 }, { name: "玟鏵姑姐", tableId: 8 },
+            { name: "海歐叔叔", tableId: 8 }, { name: "黃沛瑜", tableId: 8 }, 
             { name: "黃海洋(+1位)", tableId: 8, manualSize: 2 }, 
-            { name: "黃珮瑜", tableId: 8 }, { name: "黃海歐", tableId: 8 },
-            { name: "王克強", tableId: 8 }, { name: "鄧柏洋", tableId: 8 },
+            { name: "斌毅舅舅全家(+2位)", tableId: 8, manualSize: 3 }, 
+            { name: "Alex Wong", tableId: 8 }, { name: "Jack Wong", tableId: 8 },
 
             // Table 9: 女家朋友
             { name: "Leila", tableId: 9 }, { name: "Ana", tableId: 9 }, { name: "Gavin", tableId: 9 },
@@ -301,19 +298,19 @@
             { name: "Nora", tableId: 9 }, { name: "Brian", tableId: 9 }, { name: "Kiki", tableId: 9 },
             { name: "Jorie", tableId: 9 }, { name: "Yichen", tableId: 9 }, { name: "Katia", tableId: 9 },
 
-            // Table 10: 男家朋友
-            { name: "Sammi", tableId: 10 }, { name: "Crystal", tableId: 10 }, { name: "Michelle", tableId: 10 },
-            { name: "Joe Lo", tableId: 10 }, { name: "Winky Chau", tableId: 10 }, 
-            { name: "鄭國鏘(+3位)", tableId: 10, manualSize: 4 },
-            { name: "Kathy Keh", tableId: 10 }, { name: "Kayleen Keh", tableId: 10 }, { name: "Miyuki sze", tableId: 10 },
+            // Table 10: 男家朋友 (UPDATED - Swapped with 11)
+            { name: "大眼仔2", tableId: 10, manualSize: 2 }, 
+            { name: "Ng Ming Kin(+3位)", tableId: 10, manualSize: 4 }, 
+            { name: "Sunkist Sit", tableId: 10 },
+            { name: "陳凱偉", tableId: 10 }, 
+            { name: "黃國翹(+1位)", tableId: 10, manualSize: 2 }, 
+            { name: "方齊發(+1位)", tableId: 10, manualSize: 2 },
 
-            // Table 11: 男家朋友
-            { name: "大眼仔2", tableId: 11, manualSize: 2 }, 
-            { name: "Ng Ming Kin(+3位)", tableId: 11, manualSize: 4 }, 
-            { name: "Sunkist Sit", tableId: 11 },
-            { name: "陳凱偉", tableId: 11 }, 
-            { name: "黃國翹(+1位)", tableId: 11, manualSize: 2 }, 
-            { name: "方齊發(+1位)", tableId: 11, manualSize: 2 },
+            // Table 11: 男家朋友 (UPDATED - Swapped with 10)
+            { name: "Sammi", tableId: 11 }, { name: "Crystal", tableId: 11 }, { name: "Michelle", tableId: 11 },
+            { name: "Joe Lo", tableId: 11 }, { name: "Winky Chau", tableId: 11 }, 
+            { name: "鄭國鏘(+3位)", tableId: 11, manualSize: 4 },
+            { name: "Kathy Keh", tableId: 11 }, { name: "Kayleen Keh", tableId: 11 }, { name: "Miyuki sze", tableId: 11 },
 
             // Table 12: 女家朋友
             { name: "Phoebe", tableId: 12 }, { name: "Tingting", tableId: 12 }, { name: "Darren", tableId: 12 },
@@ -321,12 +318,11 @@
             { name: "KC", tableId: 12 }, { name: "Brian", tableId: 12 }, { name: "Wilson", tableId: 12 },
             { name: "Andy", tableId: 12 }, { name: "Anthony", tableId: 12 }, { name: "justin", tableId: 12 },
 
-            // Table 13: 女家朋友 (Skipped Table 14)
+            // Table 13: 女家朋友 (Updated)
             { name: "Kelly(+3位)", tableId: 13, manualSize: 4 }, 
             { name: "Lancy", tableId: 13 }, { name: "Betty", tableId: 13 }, 
             { name: "Lauren (+1位)", tableId: 13, manualSize: 2 }, 
-            { name: "王國忠", tableId: 13 }, 
-            { name: "鄧文基伉儷(+1位)", tableId: 13, manualSize: 3 }, // 伉儷(2)+1 = 3
+            { name: "Linda Pak (+2位)", tableId: 13, manualSize: 3 },
 
             // Table 15: 男家朋友
             { name: "Jason Wong", tableId: 15 }, { name: "Wiliam Wong", tableId: 15 }, { name: "James Lo", tableId: 15 },
