@@ -6,8 +6,8 @@
     <title>婚宴座位與簽到系統</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Noto Sans TC -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Noto Sans TC & Great Vibes (Cursive) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Great+Vibes&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -17,6 +17,7 @@
                 extend: {
                     fontFamily: {
                         sans: ['"Noto Sans TC"', 'sans-serif'],
+                        cursive: ['"Great Vibes"', 'cursive'],
                     },
                     colors: {
                         wedding: {
@@ -44,7 +45,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 背景紋理 */
+        /* 花卉線條藝術背景 (Floral Line Art) */
         .floral-bg {
             position: fixed;
             top: 0;
@@ -52,11 +53,26 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background-image: url('https://images.unsplash.com/photo-1627569209776-353df13c3164?q=80&w=2070&auto=format&fit=crop'); 
-            background-size: cover;
-            background-position: center;
-            opacity: 0.05;
-            filter: grayscale(100%) contrast(120%);
+            /* 使用淡雅的花卉線條圖案 */
+            background-image: url('https://img.freepik.com/free-vector/hand-drawn-minimal-background_23-2148999829.jpg?w=1380&t=st=1703600000~exp=1703600600~hmac=fake_signature');
+            /* Fallback or alternative elegant pattern */
+            background-image: url('https://img.freepik.com/free-vector/seamless-pattern-with-hand-drawn-flowers_23-2148055845.jpg');
+            background-size: 400px; /* 調整圖案大小 */
+            background-repeat: repeat;
+            opacity: 0.08; /* 非常淡的透明度 */
+            filter: sepia(100%) hue-rotate(320deg) saturate(20%); /* 調整色調微帶紅 */
+            pointer-events: none;
+        }
+
+        /* 內容遮罩：確保背景不干擾文字 */
+        .content-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(253,251,247,0.4) 0%, rgba(253,251,247,0.9) 100%);
             pointer-events: none;
         }
 
@@ -83,65 +99,62 @@
 <body class="text-gray-800 antialiased h-screen flex flex-col overflow-hidden">
 
     <div class="floral-bg"></div>
+    <div class="content-overlay"></div>
 
     <div class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
         
-        <!-- Header -->
-        <header class="bg-wedding-darkRed text-white pt-12 pb-32 px-6 rounded-b-[3rem] shadow-2xl relative z-10 shrink-0 overflow-hidden">
+        <!-- Header: 回歸勃艮第紅 + 香檳金 -->
+        <header class="bg-gradient-to-br from-wedding-red to-wedding-darkRed text-white pt-12 pb-32 px-6 rounded-b-[3rem] shadow-2xl relative z-10 shrink-0 overflow-hidden">
             
-            <!-- 上傳圖片背景層 -->
-            <!-- 這裡去除了 mix-blend-overlay 並提高了 opacity，確保圖片清晰可見 -->
-            <div class="absolute inset-0 z-0 opacity-60">
-                <img src="b3974525a4624d5599f16060c7cc8e7e.png" alt="Wedding Header" class="w-full h-full object-cover">
-            </div>
+            <!-- Header 內部的裝飾暗花 -->
+            <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/black-linen.png');"></div>
             
-            <!-- 漸層遮罩 (從下往上漸黑，確保底部文字清晰) -->
-            <div class="absolute inset-0 z-0 bg-gradient-to-t from-wedding-darkRed/95 via-wedding-darkRed/40 to-transparent"></div>
-
-            <!-- Header 內容 (z-10 確保在圖片之上) -->
             <div class="relative z-10">
-                <div class="flex justify-between items-start mb-6">
-                    <div>
-                        <h2 class="text-wedding-gold text-xs font-bold tracking-widest uppercase mb-1 opacity-90 drop-shadow-sm">Wedding Reception</h2>
-                        <h1 class="text-2xl font-bold drop-shadow-md">賓客簽到與座位</h1>
-                    </div>
-                    <!-- 總體進度圈 -->
-                    <div class="relative w-12 h-12 flex items-center justify-center">
-                        <svg class="transform -rotate-90 w-12 h-12">
-                            <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="4" fill="transparent" class="text-white/20" />
-                            <circle id="progressCircle" cx="24" cy="24" r="20" stroke="#c5a059" stroke-width="4" fill="transparent" stroke-dasharray="125.6" stroke-dashoffset="125.6" class="transition-all duration-1000 ease-out" />
-                        </svg>
-                        <span class="absolute text-[10px] font-bold" id="progressText">0%</span>
-                    </div>
+                <div class="flex flex-col items-center justify-center mb-8 text-center">
+                    <h2 class="text-wedding-gold text-xs font-bold tracking-[0.3em] uppercase mb-2 opacity-90">Wedding Reception</h2>
+                    <!-- 草書新人名字 -->
+                    <h1 class="text-5xl font-cursive text-white mb-2 drop-shadow-lg transform -rotate-2">Shirley & Oscar</h1>
+                    <div class="w-16 h-0.5 bg-wedding-gold/50 rounded-full mt-2"></div>
                 </div>
 
-                <!-- 數據概覽 -->
-                <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[90px] border border-white/10 shadow-lg">
-                        <div class="text-[10px] text-gray-200 mb-1">總人數</div>
-                        <div class="text-xl font-bold" id="totalHeadcount">0</div>
+                <!-- 數據概覽 & 進度圈 -->
+                <div class="flex justify-between items-end">
+                    <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar w-full mr-4">
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[85px] border border-white/10 shadow-lg text-center">
+                            <div class="text-[10px] text-gray-300 mb-1 uppercase tracking-wide">總人數</div>
+                            <div class="text-xl font-bold" id="totalHeadcount">0</div>
+                        </div>
+                        <div class="bg-green-900/40 backdrop-blur-md rounded-2xl p-3 min-w-[85px] border border-green-400/30 shadow-lg text-center">
+                            <div class="text-[10px] text-green-200 mb-1 uppercase tracking-wide">已簽到</div>
+                            <div class="text-xl font-bold text-green-300" id="checkedInCount">0</div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[85px] border border-white/10 shadow-lg text-center">
+                            <div class="text-[10px] text-gray-300 mb-1 uppercase tracking-wide">未到</div>
+                            <div class="text-xl font-bold text-wedding-gold" id="pendingCount">0</div>
+                        </div>
                     </div>
-                    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[90px] border border-green-400/30 bg-green-900/30 shadow-lg">
-                        <div class="text-[10px] text-green-200 mb-1">已簽到</div>
-                        <div class="text-xl font-bold text-green-300" id="checkedInCount">0</div>
-                    </div>
-                    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[90px] border border-white/10 shadow-lg">
-                        <div class="text-[10px] text-gray-200 mb-1">未到</div>
-                        <div class="text-xl font-bold text-wedding-gold" id="pendingCount">0</div>
+
+                    <!-- 總體進度圈 -->
+                    <div class="relative w-14 h-14 flex items-center justify-center shrink-0 mb-2">
+                        <svg class="transform -rotate-90 w-14 h-14">
+                            <circle cx="28" cy="28" r="24" stroke="currentColor" stroke-width="3" fill="transparent" class="text-white/10" />
+                            <circle id="progressCircle" cx="28" cy="28" r="24" stroke="#c5a059" stroke-width="3" fill="transparent" stroke-dasharray="150.7" stroke-dashoffset="150.7" class="transition-all duration-1000 ease-out" />
+                        </svg>
+                        <span class="absolute text-[11px] font-bold" id="progressText">0%</span>
                     </div>
                 </div>
             </div>
         </header>
 
         <!-- Main Content -->
-        <main class="-mt-24 px-4 pb-24 relative z-20 flex-1">
+        <main class="-mt-20 px-4 pb-24 relative z-20 flex-1">
             
             <!-- Search -->
-            <div class="bg-white/95 backdrop-blur-xl rounded-2xl shadow-card p-4 mb-6 flex items-center gap-3 sticky top-4 z-30 ring-1 ring-gray-100/50">
-                <div class="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center text-gray-500 shrink-0">
+            <div class="bg-white rounded-2xl shadow-card p-4 mb-6 flex items-center gap-3 sticky top-4 z-30 ring-1 ring-gray-100/50">
+                <div class="bg-gray-50 rounded-full w-10 h-10 flex items-center justify-center text-wedding-red/50 shrink-0">
                     <i class="fas fa-search"></i>
                 </div>
-                <input type="text" id="searchInput" placeholder="搜尋賓客姓名 (例如: 舅父, Sammi)..." class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400 font-medium h-full">
+                <input type="text" id="searchInput" placeholder="搜尋賓客姓名..." class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400 font-medium h-full">
                 <button onclick="clearSearch()" id="clearSearchBtn" class="hidden text-gray-400 p-2"><i class="fas fa-times"></i></button>
             </div>
 
@@ -164,10 +177,8 @@
             </button>
 
             <!-- Top Banner -->
-            <div class="h-32 bg-gradient-to-br from-wedding-red to-pink-900 relative flex items-center justify-center overflow-hidden">
-                <div class="absolute inset-0 opacity-30">
-                     <img src="b3974525a4624d5599f16060c7cc8e7e.png" alt="Header" class="w-full h-full object-cover">
-                </div>
+            <div class="h-32 bg-gradient-to-br from-wedding-red to-wedding-darkRed relative flex items-center justify-center overflow-hidden">
+                <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/black-linen.png');"></div>
                 
                 <div class="absolute -bottom-8 w-20 h-20 bg-white rounded-full p-1.5 shadow-lg z-10">
                     <div class="w-full h-full bg-gray-100 rounded-full flex items-center justify-center text-3xl font-bold text-wedding-red" id="modalAvatar">
@@ -179,7 +190,7 @@
             <!-- Content -->
             <div class="pt-12 pb-8 px-6 text-center">
                 <h2 class="text-2xl font-bold text-gray-800 mb-1" id="modalGuestName">Guest Name</h2>
-                <p class="text-sm text-gray-500 mb-6" id="modalGuestTable">Table X</p>
+                <p class="text-sm text-gray-500 mb-6 font-medium" id="modalGuestTable">Table X</p>
 
                 <!-- Info Cards -->
                 <div class="grid grid-cols-2 gap-3 mb-8">
@@ -205,98 +216,143 @@
 
     <script>
         // --- 數據設置 ---
-        const TABLE_COUNT = 19; // 顯示1-19桌 (會過濾掉 4 和 14)
+        // 總桌數設定為19桌 (根據PDF最大桌號)
+        const TABLE_COUNT = 19; 
         const SEATS_PER_TABLE = 12; // 預設每桌12人
         
-        // 定義桌號分類
-        const GROOM_TABLES = [6, 7, 10, 11, 15, 16, 18, 19]; // 男家朋友
-        const BRIDE_TABLES = [5, 8, 9, 12, 13, 17]; // 女家親戚/朋友
+        // 桌號分類資訊 (根據PDF更新)
+        // 顏色代碼: "gold" (主家), "red" (長輩), "blue" (男家), "pink" (女家)
+        const TABLE_INFO = {
+            1: { title: "主家席", color: "gold" },
+            2: { title: "男家長輩", color: "red" },
+            3: { title: "女家長輩", color: "red" },
+            5: { title: "女家親戚", color: "pink" },
+            6: { title: "男家朋友", color: "blue" },
+            7: { title: "男家朋友", color: "blue" },
+            8: { title: "女家朋友", color: "pink" },
+            9: { title: "女家朋友", color: "pink" },
+            10: { title: "男家朋友", color: "blue" },
+            11: { title: "男家朋友", color: "blue" },
+            12: { title: "女家朋友", color: "pink" },
+            13: { title: "女家朋友", color: "pink" },
+            15: { title: "男家朋友", color: "blue" },
+            16: { title: "男家朋友", color: "blue" },
+            17: { title: "女家朋友", color: "pink" },
+            18: { title: "男家朋友", color: "blue" },
+            19: { title: "男家朋友", color: "blue" }
+        };
 
-        // 原始數據
+        // 原始數據 (根據上傳的 Wedding plan PDF 更新)
         let rawGuests = [
-            // Table 1
+            // Table 1: 主家席
             { name: "新郎媽媽", tableId: 1 },
             { name: "新郎姨丈(+新郎姨媽,新郎表哥,新郎表姐)", tableId: 1, manualSize: 4 },
-            { name: "吳生(Mr Roger Ng) (+吳太, Shirley, 表姨丈)", tableId: 1, manualSize: 4 },
-            { name: "新郎大舅父(Steven Hui) (+舅母)", tableId: 1, manualSize: 2 },
+            { name: "吳生(Mr Roger Ng)+吳太(Ms Amy Leung)", tableId: 1, manualSize: 2 },
+            { name: "新郎表姨(Shirley Hui)(+表姨丈)", tableId: 1, manualSize: 2 },
+            { name: "新郎大舅父 (Steven Hui) (+舅母)", tableId: 1, manualSize: 2 },
             { name: "新郎舅父(Stanley Hui) (+舅母)", tableId: 1, manualSize: 2 },
             { name: "胡生(+許小姐+胡超文)", tableId: 1, manualSize: 3 },
             { name: "永高老叔(+老嬸)", tableId: 1, manualSize: 2 },
             { name: "新郎", tableId: 1 },
             { name: "新娘", tableId: 1 },
-            // Table 2 (更新人數)
+            
+            // Table 2: 男家長輩
             { name: "文昭舅舅(+舅母)", tableId: 2, manualSize: 2 },
             { name: "炯强舅舅(+舅母)", tableId: 2, manualSize: 2 },
             { name: "耀彬舅舅(+舅母)", tableId: 2, manualSize: 2 },
             { name: "基茂舅舅", tableId: 2 },
             { name: "盛少英(+林先生)", tableId: 2, manualSize: 2 },
             { name: "劉劍文(+劉太)", tableId: 2, manualSize: 2 },
-            // Table 3
+
+            // Table 3: 女家長輩
             { name: "Linda Wu", tableId: 3 }, { name: "胡天虹", tableId: 3 }, { name: "胡秋虹", tableId: 3 },
             { name: "胡曉虹", tableId: 3 }, { name: "李燕兒", tableId: 3 }, { name: "李秀兒", tableId: 3 },
             { name: "李倩兒", tableId: 3 }, { name: "李錫生", tableId: 3 }, { name: "李麗兒", tableId: 3 },
             { name: "區清", tableId: 3 }, { name: "梅冰", tableId: 3 }, { name: "George Yeung", tableId: 3 },
-            // Table 5 (Skipped Table 4)
-            { name: "徐偉", tableId: 5 }, { name: "徐瑞儀", tableId: 5 }, { name: "傅先生全家", tableId: 5, manualSize: 4 },
+
+            // Table 5: 女家親戚 (Skipped Table 4)
+            { name: "徐偉", tableId: 5 }, { name: "徐瑞儀", tableId: 5 }, 
+            { name: "傅先生全家(+5位)", tableId: 5, manualSize: 6 }, // "全家"通常是1位 + 5位 = 6位，或本身代表1位+5，此處假設全家為1個單位+5位
             { name: "王向紅", tableId: 5 }, { name: "吳承菊", tableId: 5 }, { name: "吳起恕", tableId: 5 },
-            // Table 6
+
+            // Table 6: 男家朋友
             { name: "綺華", tableId: 6 }, { name: "錦鑾", tableId: 6 }, { name: "佩華", tableId: 6 },
             { name: "淑華", tableId: 6 }, { name: "宋吟", tableId: 6 }, { name: "燕芬", tableId: 6 },
             { name: "玉娥", tableId: 6 }, { name: "姚晴萱", tableId: 6 }, { name: "姚澤彬", tableId: 6 },
-            { name: "劉子釣(4人)", tableId: 6 },
-            // Table 7 (更新人數)
-            { name: "吳总(+Carly Ng)", tableId: 7, manualSize: 2 }, 
-            { name: "徐生", tableId: 7 }, 
-            { name: "Stephanus (+4)", tableId: 7 }, { name: "Roberto 2", tableId: 7 },
+            { name: "劉子鈞(+3位)", tableId: 6, manualSize: 4 }, // 1+3
+
+            // Table 7: 男家朋友
+            { name: "吳总", tableId: 7 }, { name: "Carly Ng", tableId: 7 }, 
+            { name: "徐生", tableId: 7 }, { name: "Stephanus (+4)", tableId: 7, manualSize: 5 }, // 1+4
+            { name: "Roberto (+1)", tableId: 7, manualSize: 2 }, // 1+1
             { name: "徐總", tableId: 7 }, { name: "Jimmy", tableId: 7 },
-            // Table 8
-            { name: "蔡總全家", tableId: 8, manualSize: 3 }, 
-            { name: "梅士平伉儷", tableId: 8, manualSize: 2 },
-            { name: "李玟鏵", tableId: 8 }, { name: "黃海洋", tableId: 8 }, 
+
+            // Table 8: 女家朋友
+            { name: "蔡總全家(+2位)", tableId: 8, manualSize: 3 }, // 1+2
+            { name: "梅士平伉儷(+1位)", tableId: 8, manualSize: 3 }, // 伉儷2人 + 1位? 或是伉儷=1單位+1? 根據前文邏輯通常是1單位代表2人，這裡(+1位)可能是額外小孩。若"梅士平伉儷"是一張卡片，算2人，再+1=3。或者"梅士平伉儷"是一個人名+配偶，算2人。若寫(+1位)可能是共3人。這裡暫定為3人。
+            { name: "李玟鏵", tableId: 8 }, 
+            { name: "黃海洋(+1位)", tableId: 8, manualSize: 2 }, 
             { name: "黃珮瑜", tableId: 8 }, { name: "黃海歐", tableId: 8 },
             { name: "王克強", tableId: 8 }, { name: "鄧柏洋", tableId: 8 },
-            // Table 9
+
+            // Table 9: 女家朋友
             { name: "Leila", tableId: 9 }, { name: "Ana", tableId: 9 }, { name: "Gavin", tableId: 9 },
             { name: "Davina", tableId: 9 }, { name: "Catherine", tableId: 9 }, { name: "Lemon", tableId: 9 },
             { name: "Nora", tableId: 9 }, { name: "Brian", tableId: 9 }, { name: "Kiki", tableId: 9 },
             { name: "Jorie", tableId: 9 }, { name: "Yichen", tableId: 9 }, { name: "Katia", tableId: 9 },
-            // Table 10
+
+            // Table 10: 男家朋友
             { name: "Sammi", tableId: 10 }, { name: "Crystal", tableId: 10 }, { name: "Michelle", tableId: 10 },
-            { name: "Joe Lo", tableId: 10 }, { name: "Winky", tableId: 10 }, 
-            { name: "鄭國鏘(3位)", tableId: 10 },
+            { name: "Joe Lo", tableId: 10 }, { name: "Winky Chau", tableId: 10 }, 
+            { name: "鄭國鏘(+3位)", tableId: 10, manualSize: 4 },
             { name: "Kathy Keh", tableId: 10 }, { name: "Kayleen Keh", tableId: 10 }, { name: "Miyuki sze", tableId: 10 },
-            // Table 11
-            { name: "大眼仔(2位)", tableId: 11 }, { name: "健(4位)", tableId: 11 }, { name: "謙", tableId: 11 },
-            { name: "陳凱偉", tableId: 11 }, { name: "黃國翹(2位)", tableId: 11 }, { name: "方齊發(2位)", tableId: 11 },
-            // Table 12
+
+            // Table 11: 男家朋友
+            { name: "大眼仔2", tableId: 11, manualSize: 2 }, 
+            { name: "Ng Ming Kin(+3位)", tableId: 11, manualSize: 4 }, 
+            { name: "Sunkist Sit", tableId: 11 },
+            { name: "陳凱偉", tableId: 11 }, 
+            { name: "黃國翹(+1位)", tableId: 11, manualSize: 2 }, 
+            { name: "方齊發(+1位)", tableId: 11, manualSize: 2 },
+
+            // Table 12: 女家朋友
             { name: "Phoebe", tableId: 12 }, { name: "Tingting", tableId: 12 }, { name: "Darren", tableId: 12 },
             { name: "Chris", tableId: 12 }, { name: "Siann", tableId: 12 }, { name: "Miror", tableId: 12 },
             { name: "KC", tableId: 12 }, { name: "Brian", tableId: 12 }, { name: "Wilson", tableId: 12 },
-            { name: "Andy", tableId: 12 }, { name: "Anthony", tableId: 12 }, { name: "Justin", tableId: 12 },
-            // Table 13
-            { name: "Kelly", tableId: 13 }, { name: "Lancy", tableId: 13 }, { name: "Miss Ma", tableId: 13 },
-            { name: "Miss Jin", tableId: 13 }, { name: "Linda Bai", tableId: 13 }, { name: "王國忠", tableId: 13 },
-            // Table 15 (Skipped Table 14)
-            { name: "Jason", tableId: 15 }, { name: "Wiliam Wong", tableId: 15 }, { name: "James Lo", tableId: 15 },
+            { name: "Andy", tableId: 12 }, { name: "Anthony", tableId: 12 }, { name: "justin", tableId: 12 },
+
+            // Table 13: 女家朋友 (Skipped Table 14)
+            { name: "Kelly(+3位)", tableId: 13, manualSize: 4 }, 
+            { name: "Lancy", tableId: 13 }, { name: "Betty", tableId: 13 }, 
+            { name: "Lauren (+1位)", tableId: 13, manualSize: 2 }, 
+            { name: "王國忠", tableId: 13 }, 
+            { name: "鄧文基伉儷(+1位)", tableId: 13, manualSize: 3 }, // 伉儷(2)+1 = 3
+
+            // Table 15: 男家朋友
+            { name: "Jason Wong", tableId: 15 }, { name: "Wiliam Wong", tableId: 15 }, { name: "James Lo", tableId: 15 },
             { name: "Nik Po", tableId: 15 }, { name: "林霞", tableId: 15 }, { name: "凌生", tableId: 15 },
-            { name: "張天永", tableId: 15 }, { name: "林生(2位)", tableId: 15 }, { name: "劉总(2位)", tableId: 15 },
-            { name: "Lala", tableId: 15 },
-            // Table 16
-            { name: "暢(兒子)", tableId: 16 }, { name: "葉堡琛", tableId: 16 }, { name: "劉子軒(3位)", tableId: 16 },
+            { name: "張天永", tableId: 15 }, { name: "林生(2位)", tableId: 15, manualSize: 2 }, { name: "劉总", tableId: 15 },
+            { name: "Sanda Tsang", tableId: 15 }, { name: "Lala", tableId: 15 },
+
+            // Table 16: 男家朋友
+            { name: "暢(兒子)", tableId: 16 }, { name: "葉堡琛", tableId: 16 }, { name: "劉子軒(3位)", tableId: 16, manualSize: 3 },
             { name: "林綺婷", tableId: 16 }, { name: "朱岸南", tableId: 16 }, { name: "Dicky Cheung", tableId: 16 },
             { name: "Karen Law", tableId: 16 }, { name: "范嘉俊", tableId: 16 }, { name: "任旭陽", tableId: 16 },
             { name: "Rannie Yu", tableId: 16 },
-            // Table 17
+
+            // Table 17: 女家朋友
             { name: "Denise", tableId: 17 }, { name: "Leo", tableId: 17 }, { name: "Gloria", tableId: 17 },
             { name: "Mackie", tableId: 17 }, { name: "Brina", tableId: 17 }, { name: "Ashley", tableId: 17 },
             { name: "Shiiko", tableId: 17 }, { name: "Jaye", tableId: 17 }, { name: "Cheryl", tableId: 17 },
             { name: "Betsy", tableId: 17 }, { name: "Joe", tableId: 17 }, { name: "Pakki", tableId: 17 },
-            // Table 18
+
+            // Table 18: 男家朋友
             { name: "Crystal", tableId: 18 }, { name: "Ada", tableId: 18 }, { name: "Angel", tableId: 18 },
             { name: "Celia", tableId: 18 }, { name: "Siu Yuk", tableId: 18 }, { name: "Momoco", tableId: 18 },
             { name: "Alison", tableId: 18 }, { name: "陳嘉安", tableId: 18 }, { name: "John", tableId: 18 },
             { name: "Or fu", tableId: 18 },
-            // Table 19
+
+            // Table 19: 男家朋友
             { name: "Kelvin Li", tableId: 19 }, { name: "Matt", tableId: 19 }, { name: "Hayley", tableId: 19 },
             { name: "Ivy", tableId: 19 }, { name: "Ting fung", tableId: 19 }, { name: "Roxanne", tableId: 19 },
             { name: "Gigi", tableId: 19 }, { name: "Bonnie", tableId: 19 }, { name: "Vicky", tableId: 19 },
@@ -321,12 +377,18 @@
                     size = g.manualSize;
                 } else {
                     const name = g.name;
-                    const plusMatch = name.match(/\(\+(\d+)\)/);
+                    // 自動解析 (+N) 或 N位
+                    const plusMatch = name.match(/\(\+(\d+)(?:位|人)?\)/); // 匹配 (+3), (+3位)
                     if (plusMatch) size = 1 + parseInt(plusMatch[1]);
-                    const bracketMatch = name.match(/\((\d+)[位人]\)/);
+                    
+                    const bracketMatch = name.match(/\((\d+)[位人]\)/); // 匹配 (3位)
                     if (bracketMatch) size = parseInt(bracketMatch[1]);
-                    const spaceNumMatch = name.match(/\s(\d+)$/);
+                    
+                    const spaceNumMatch = name.match(/\s(\d+)$/); // 匹配 Name 2
                     if (spaceNumMatch) size = parseInt(spaceNumMatch[1]);
+                    
+                    // 特殊: 伉儷 = 2人
+                    if (name.includes("伉儷") && !plusMatch && !bracketMatch) size = 2;
                 }
                 return {
                     id: index + 1,
@@ -354,7 +416,7 @@
 
             const percentage = totalHeadcount > 0 ? (checkedInHeadcount / totalHeadcount) * 100 : 0;
             const circle = document.getElementById('progressCircle');
-            const radius = 20;
+            const radius = 24; 
             const circumference = 2 * Math.PI * radius;
             const offset = circumference - (percentage / 100) * circumference;
             circle.style.strokeDasharray = `${circumference} ${circumference}`;
@@ -384,6 +446,7 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
             for (let i = 1; i <= TABLE_COUNT; i++) {
+                // 跳過不存在的桌號
                 if (i === 4 || i === 14) continue;
 
                 let tableGuests = guests.filter(g => g.tableId === i);
@@ -396,54 +459,49 @@
                 const isOverCapacity = currentHeadcount > SEATS_PER_TABLE;
 
                 // --- 配色邏輯 ---
-                let headerBg = 'bg-white';
-                let borderColor = 'border-transparent';
-                let titleColor = 'text-gray-800';
-                let subTitle = '';
-                let iconBg = 'bg-gray-100';
-                let iconColor = 'text-gray-500';
+                const info = TABLE_INFO[i] || { title: `第 ${i} 桌`, color: 'gray' };
+                
+                let headerBg, borderColor, titleColor, subTitle, iconBg, iconColor;
 
-                // 第 1 桌：主家席 (金)
-                if (i === 1) {
-                    headerBg = 'bg-gradient-to-r from-wedding-gold/30 to-white';
+                if (info.color === "gold") { // 主家席
+                    headerBg = 'bg-gradient-to-r from-wedding-gold/20 to-white';
                     titleColor = 'text-[#856404]'; 
-                    borderColor = 'border-wedding-gold/50';
-                    subTitle = '<span class="text-xs text-wedding-gold font-bold ml-2">(主家席)</span>';
+                    borderColor = 'border-wedding-gold/40';
                     iconBg = 'bg-wedding-gold/20';
                     iconColor = 'text-[#856404]';
-                }
-                // 第 2 & 3 桌：長輩席 (紅漸變)
-                else if (i === 2 || i === 3) {
-                    headerBg = 'bg-gradient-to-r from-wedding-red/20 to-pink-50'; // 紅色漸變
+                    subTitle = `<span class="text-xs text-wedding-gold font-bold ml-2">(${info.title})</span>`;
+                } else if (info.color === "red") { // 長輩席
+                    headerBg = 'bg-gradient-to-r from-wedding-red/10 to-white'; 
                     titleColor = 'text-wedding-red'; 
-                    borderColor = 'border-wedding-red/30';
+                    borderColor = 'border-wedding-red/20';
                     iconBg = 'bg-wedding-red/10';
                     iconColor = 'text-wedding-red';
-                    
-                    if (i === 2) subTitle = '<span class="text-xs text-wedding-red font-bold ml-2">(男家長輩)</span>';
-                    if (i === 3) subTitle = '<span class="text-xs text-wedding-red font-bold ml-2">(女家長輩)</span>';
-                }
-                // 男家 (藍漸變)
-                else if (GROOM_TABLES.includes(i)) {
-                    headerBg = 'bg-gradient-to-r from-blue-100 to-white'; // 藍色漸變
-                    titleColor = 'text-blue-800';
+                    subTitle = `<span class="text-xs text-wedding-red font-bold ml-2">(${info.title})</span>`;
+                } else if (info.color === "blue") { // 男家
+                    headerBg = 'bg-gradient-to-r from-blue-100 to-white'; 
+                    titleColor = 'text-blue-800'; 
                     borderColor = 'border-blue-200';
                     iconBg = 'bg-blue-100';
                     iconColor = 'text-blue-600';
-                    subTitle = '<span class="text-xs text-blue-500 font-medium ml-2">男家</span>';
-                }
-                // 女家 (粉漸變)
-                else if (BRIDE_TABLES.includes(i)) {
-                    headerBg = 'bg-gradient-to-r from-pink-100 to-white'; // 粉色漸變
-                    titleColor = 'text-pink-800';
+                    subTitle = `<span class="text-xs text-blue-600 font-bold ml-2">(${info.title})</span>`;
+                } else if (info.color === "pink") { // 女家
+                    headerBg = 'bg-gradient-to-r from-pink-100 to-white'; 
+                    titleColor = 'text-pink-800'; 
                     borderColor = 'border-pink-200';
                     iconBg = 'bg-pink-100';
-                    iconColor = 'text-pink-500';
-                    subTitle = '<span class="text-xs text-pink-500 font-medium ml-2">女家</span>';
+                    iconColor = 'text-pink-600';
+                    subTitle = `<span class="text-xs text-pink-600 font-bold ml-2">(${info.title})</span>`;
+                } else { // 朋友席/一般
+                    headerBg = 'bg-white';
+                    titleColor = 'text-gray-800';
+                    borderColor = 'border-transparent';
+                    iconBg = 'bg-gray-100';
+                    iconColor = 'text-gray-400';
+                    subTitle = `<span class="text-xs text-gray-400 font-normal ml-2">${info.title}</span>`;
                 }
 
                 let cardHTML = `
-                    <div class="bg-white rounded-3xl shadow-card overflow-hidden border-2 ${borderColor} transition-all duration-300 hover:shadow-xl">
+                    <div class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-card overflow-hidden border-2 ${borderColor} transition-all duration-300 hover:shadow-xl group-hover:border-wedding-gold/30">
                         <div class="p-4 border-b border-gray-100 flex justify-between items-center ${headerBg}">
                             <div class="flex items-center">
                                 <div class="w-8 h-8 rounded-full ${iconBg} ${iconColor} flex items-center justify-center font-bold text-sm mr-2">
@@ -463,7 +521,7 @@
                                     const opacityClass = searchTerm && !isMatch ? 'opacity-30' : 'opacity-100';
                                     
                                     return `
-                                    <div onclick="openCheckInModal(${guest.id})" class="guest-card ${guest.checkedIn ? 'checked-in' : 'bg-gray-50'} ${opacityClass} cursor-pointer group relative border border-gray-100 rounded-xl px-3 py-2 flex items-center transition-all duration-200 hover:scale-105 active:scale-95 w-full sm:w-auto">
+                                    <div onclick="openCheckInModal(${guest.id})" class="guest-card ${guest.checkedIn ? 'checked-in' : 'bg-gray-50'} ${opacityClass} cursor-pointer group relative border border-gray-100 rounded-xl px-3 py-2 flex items-center transition-all duration-200 hover:scale-105 active:scale-95 w-full sm:w-auto hover:border-wedding-gold/30 hover:shadow-md">
                                         <div class="avatar-box w-8 h-8 rounded-full ${guest.checkedIn ? 'bg-wedding-green text-white' : 'bg-white text-gray-300'} flex items-center justify-center text-xs font-bold mr-3 shadow-sm transition-colors">
                                             ${guest.checkedIn ? '<i class="fas fa-check"></i>' : (guest.size > 1 ? guest.size : '<i class="fas fa-user"></i>')}
                                         </div>
