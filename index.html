@@ -328,9 +328,6 @@
         <main id="tab-mahjong" class="hidden px-4 py-6 pb-40">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-bold text-wedding-red pl-2 border-l-4 border-wedding-gold">廣東麻雀計番</h2>
-                <button onclick="resetMahjong()" class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-full font-bold">
-                    <i class="fas fa-redo-alt mr-1"></i> 重置
-                </button>
             </div>
 
             <!-- Total Score Display -->
@@ -339,10 +336,15 @@
                 <div class="absolute -right-4 -top-4 text-white/10 text-8xl transform rotate-12">
                     <i class="fas fa-dice"></i>
                 </div>
-                <div class="relative z-10 text-center">
+                <div class="relative z-10 text-center w-full">
                     <div class="text-sm text-wedding-gold font-bold uppercase tracking-widest mb-1">Total Fan</div>
                     <div class="text-7xl font-bold" id="totalFanDisplay">0</div>
-                    <div class="text-sm opacity-80 mt-2 font-medium">番</div>
+                    <div class="text-sm opacity-80 mt-2 mb-6 font-medium">番</div>
+                    
+                    <!-- Reset Button Inside Card -->
+                    <button onclick="resetMahjong()" class="text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-6 py-2 rounded-full font-bold transition-all active:scale-95 mx-auto flex items-center justify-center gap-2">
+                        <i class="fas fa-redo-alt"></i> 重置歸零
+                    </button>
                 </div>
             </div>
 
