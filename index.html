@@ -182,6 +182,40 @@
         #headerTitleWrapper {
             transition: transform 0.3s ease;
         }
+
+        /* Search Suggestions Dropdown */
+        .suggestions-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            margin-top: 4px;
+            z-index: 50;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #f3f4f6;
+        }
+        .suggestion-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f9fafb;
+            font-size: 0.95rem;
+            color: #374151;
+        }
+        .suggestion-item:hover {
+            background-color: #fdfbf7;
+            color: #8a1c28;
+        }
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        .highlight-match {
+            color: #8a1c28;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="text-gray-800 antialiased pb-24">
@@ -191,7 +225,7 @@
     <div class="content-overlay"></div>
 
     <!-- Header (Fixed) -->
-    <header id="mainHeader" class="fixed top-0 left-0 w-full bg-gradient-to-br from-wedding-red to-wedding-darkRed text-white pt-10 pb-8 px-6 rounded-b-[2.5rem] shadow-xl z-50 overflow-hidden">
+    <header id="mainHeader" class="fixed top-0 left-0 w-full bg-gradient-to-br from-wedding-red to-wedding-darkRed text-white pt-10 pb-8 px-6 rounded-b-[2.5rem] shadow-xl z-[60] overflow-hidden">
         <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/black-linen.png');"></div>
         
         <div class="relative z-10 flex flex-col items-center">
@@ -236,21 +270,29 @@
         </div>
     </header>
 
-    <!-- Spacer to push content down from fixed header -->
-    <div id="headerSpacer" class="transition-all duration-300"></div>
+    <!-- Spacer to push content down from fixed header. Initial height set to prevent search bar jump. -->
+    <div id="headerSpacer" class="transition-all duration-300" style="height: 280px;"></div>
 
     <!-- Main Content -->
     <div class="relative z-20" id="mainScrollContainer">
         
         <!-- TAB 1: 賓客名單 -->
         <main id="tab-guests" class="px-4 py-6">
-            <div class="bg-white rounded-2xl shadow-card p-4 mb-6 flex items-center gap-3 sticky top-[120px] z-30 ring-1 ring-gray-100/50 transition-all duration-300" id="searchBar">
-                <div class="bg-gray-50 rounded-full w-10 h-10 flex items-center justify-center text-wedding-red/50 shrink-0">
-                    <i class="fas fa-search"></i>
+            <!-- Search Bar Wrapper -->
+            <div class="relative bg-white rounded-2xl shadow-card p-4 mb-6 sticky top-[80px] z-50 ring-1 ring-gray-100/50 transition-all duration-300" id="searchBar">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gray-50 rounded-full w-10 h-10 flex items-center justify-center text-wedding-red/50 shrink-0">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="relative w-full h-full">
+                         <input type="text" id="searchInput" placeholder="搜尋賓客姓名..." autocomplete="off" class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400 font-medium h-full">
+                    </div>
+                    <button onclick="clearSearch()" id="clearSearchBtn" class="hidden text-gray-400 p-2"><i class="fas fa-times"></i></button>
                 </div>
-                <input type="text" id="searchInput" placeholder="搜尋賓客姓名..." class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400 font-medium h-full">
-                <button onclick="clearSearch()" id="clearSearchBtn" class="hidden text-gray-400 p-2"><i class="fas fa-times"></i></button>
+                <!-- Suggestions Dropdown Container -->
+                <div id="searchSuggestions" class="suggestions-dropdown hidden"></div>
             </div>
+            
             <div id="tablesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </main>
 
@@ -282,7 +324,8 @@
         </main>
 
         <!-- TAB 6: 麻雀計番 -->
-        <main id="tab-mahjong" class="hidden px-4 py-6">
+        <!-- Added extra padding at bottom (pb-32) to prevent accidental scrolls -->
+        <main id="tab-mahjong" class="hidden px-4 py-6 pb-40">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-bold text-wedding-red pl-2 border-l-4 border-wedding-gold">廣東麻雀計番</h2>
                 <button onclick="resetMahjong()" class="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-full font-bold">
@@ -370,7 +413,8 @@
         </main>
 
         <!-- TAB 5: 資訊 -->
-        <main id="tab-info" class="hidden px-4 py-6">
+        <!-- Added extra padding at bottom (pb-32) -->
+        <main id="tab-info" class="hidden px-4 py-6 pb-40">
              <!-- 天氣 Widget -->
             <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl p-6 text-white shadow-lg mb-8 relative overflow-hidden">
                 <div class="absolute top-[-20px] right-[-20px] text-white/20 text-9xl">
@@ -556,7 +600,7 @@
             19: { title: "男家朋友", color: "blue" }
         };
 
-        // Guest List (Truncated for brevity, but logically full)
+        // Guest List
         let rawGuests = [
             // Table 1
             { name: "新郎媽媽", tableId: 1, hasInvitation: true },
@@ -740,6 +784,13 @@
             setupSearch();
             setupScrollEffect();
             updateSpacerHeight();
+            
+            // Force an initial update to layout to handle fixed header spacing properly on load
+            // This ensures the sticky search bar and content aren't hidden behind the header
+            setTimeout(() => {
+                window.dispatchEvent(new Event('scroll'));
+                updateSpacerHeight();
+            }, 100);
         });
 
         // --- Init Functions ---
@@ -978,8 +1029,8 @@
                 const titleWrapper = document.getElementById('headerTitleWrapper');
                 const searchBar = document.getElementById('searchBar');
                 
-                // Check if user has scrolled down
-                if (window.scrollY > 30) {
+                // Change Logic: If ANY scroll (not at very top), keep shrunk. Only expand at EXACT top.
+                if (window.scrollY > 0) {
                     // Shrink State
                     header.classList.remove('pt-10', 'pb-8', 'rounded-b-[2.5rem]');
                     header.classList.add('pt-3', 'pb-3', 'rounded-b-3xl', 'shadow-2xl');
@@ -1004,11 +1055,14 @@
                     
                     // Adjust sticky search bar position if visible
                     if(searchBar) {
-                        searchBar.style.top = '80px'; // Adjust based on shrunk header height
+                        // Header height is roughly 80-90px when shrunk. 
+                        // Set top to allow it to stick right below header.
+                        // Safe value: 75px
+                        searchBar.style.top = '75px'; 
                     }
                     
                 } else {
-                    // Expanded State
+                    // Expanded State (Only when at absolute top)
                     header.classList.add('pt-10', 'pb-8', 'rounded-b-[2.5rem]');
                     header.classList.remove('pt-3', 'pb-3', 'rounded-b-3xl', 'shadow-2xl');
 
@@ -1040,14 +1094,7 @@
                     
                     // Reset sticky search bar position
                     if(searchBar) {
-                         searchBar.style.top = '280px'; // Approx expanded height
-                         // Better: let it flow naturally or calc height? 
-                         // For simplicity, we just clear inline style and let CSS sticky handle (if not fixed)
-                         // But since we use sticky top-[x], we need to be careful.
-                         // Actually, sticky works relative to viewport. If header is fixed, search bar needs top = header height.
-                         // We'll update spacer height logic to handle flow.
-                         const headerHeight = header.offsetHeight;
-                         searchBar.style.top = (headerHeight + 10) + 'px';
+                         searchBar.style.top = '75px'; 
                     }
                 }
             });
@@ -1056,13 +1103,9 @@
         function updateSpacerHeight() {
             const header = document.getElementById('mainHeader');
             const spacer = document.getElementById('headerSpacer');
-            // We want spacer to be the height of the header in its "expanded" state (at top)
-            // If we are currently scrolled down, we might not get the full height, 
-            // but for initial load or tab switch at top it works.
-            if(window.scrollY < 30) {
+            if(window.scrollY < 10) {
                  spacer.style.height = header.offsetHeight + 'px';
             }
-            // If scrolled, we don't update spacer to prevent content jumping
         }
 
         function openCheckInModal(id) {
@@ -1297,17 +1340,73 @@
         function setupSearch() {
             const input = document.getElementById('searchInput');
             const btn = document.getElementById('clearSearchBtn');
+            const suggestionsBox = document.getElementById('searchSuggestions');
+            
+            // Search Input Event
             input.addEventListener('input', (e) => {
-                if(e.target.value) btn.classList.remove('hidden');
+                const val = e.target.value.toLowerCase().trim();
+                
+                // Toggle Clear Button
+                if(val) btn.classList.remove('hidden');
                 else btn.classList.add('hidden');
+                
+                // Filter Tables
                 renderTables();
+
+                // Suggestions Logic
+                if (val.length > 0) {
+                    const matches = guests.filter(g => g.name.toLowerCase().includes(val)).slice(0, 8); // Max 8 suggestions
+                    if (matches.length > 0) {
+                        suggestionsBox.innerHTML = matches.map(g => {
+                            const matchIndex = g.name.toLowerCase().indexOf(val);
+                            const pre = g.name.substring(0, matchIndex);
+                            const match = g.name.substring(matchIndex, matchIndex + val.length);
+                            const post = g.name.substring(matchIndex + val.length);
+                            
+                            return `
+                                <div class="suggestion-item" onclick="selectSuggestion('${g.name}')">
+                                    <span class="text-gray-400 mr-2 text-xs"><i class="fas fa-user"></i></span>
+                                    ${pre}<span class="highlight-match">${match}</span>${post}
+                                    <span class="text-xs text-gray-400 ml-2">(第 ${g.tableId} 桌)</span>
+                                </div>
+                            `;
+                        }).join('');
+                        suggestionsBox.classList.remove('hidden');
+                    } else {
+                        suggestionsBox.classList.add('hidden');
+                    }
+                } else {
+                    suggestionsBox.classList.add('hidden');
+                }
             });
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!document.getElementById('searchBar').contains(e.target)) {
+                    suggestionsBox.classList.add('hidden');
+                }
+            });
+            
+            // Focus on input shows suggestions if value exists
+            input.addEventListener('focus', () => {
+                if(input.value.trim().length > 0) {
+                     input.dispatchEvent(new Event('input'));
+                }
+            });
+        }
+        
+        function selectSuggestion(name) {
+            const input = document.getElementById('searchInput');
+            input.value = name;
+            document.getElementById('searchSuggestions').classList.add('hidden');
+            renderTables();
         }
 
         function clearSearch() {
             const input = document.getElementById('searchInput');
             input.value = '';
             document.getElementById('clearSearchBtn').classList.add('hidden');
+            document.getElementById('searchSuggestions').classList.add('hidden');
             renderTables();
         }
     </script>
