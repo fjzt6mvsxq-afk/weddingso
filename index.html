@@ -43,39 +43,26 @@
         body {
             background-color: #fdfbf7;
             -webkit-tap-highlight-color: transparent;
-            min-height: 100vh;
         }
 
-        /* 花卉線條藝術背景 */
+        /* 花卉線條藝術背景 (Floral Line Art) */
         .floral-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -2;
+            z-index: -1;
+            /* 使用淡雅的花卉線條圖案 */
             background-image: url('https://img.freepik.com/free-vector/hand-drawn-minimal-background_23-2148999829.jpg?w=1380&t=st=1703600000~exp=1703600600~hmac=fake_signature');
             background-size: 400px;
             background-repeat: repeat;
-            opacity: 0.05;
+            opacity: 0.08;
             filter: sepia(100%) hue-rotate(320deg) saturate(20%);
             pointer-events: none;
         }
 
-        /* Shirley & Oscar 暗花浮水印背景 */
-        .watermark-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Ctext x='150' y='100' font-family='Great Vibes' font-size='40' fill='%238a1c28' fill-opacity='0.04' transform='rotate(-20 150 100)' text-anchor='middle' dominant-baseline='middle'%3EShirley %26 Oscar%3C/text%3E%3C/svg%3E");
-            background-repeat: repeat;
-            pointer-events: none;
-        }
-
-        /* 內容遮罩 */
+        /* 內容遮罩 & 浮水印 */
         .content-overlay {
             position: fixed;
             top: 0;
@@ -83,8 +70,28 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: radial-gradient(circle, rgba(253,251,247,0.4) 0%, rgba(253,251,247,0.8) 100%);
+            background: radial-gradient(circle, rgba(253,251,247,0.4) 0%, rgba(253,251,247,0.9) 100%);
             pointer-events: none;
+        }
+
+        /* Shirley & Oscar 浮水印背景 */
+        .watermark-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.03; 
+            pointer-events: none;
+            font-family: 'Great Vibes', cursive;
+            font-size: 15vw; 
+            color: #8a1c28;
+            transform: rotate(-15deg);
+            white-space: nowrap;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -161,262 +168,105 @@
             gap: 4px;
             margin-top: 2px;
         }
-
-        /* Mahjong Toggle Button Style */
-        .mj-toggle.active {
-            background-color: #8a1c28;
-            color: white;
-            border-color: #8a1c28;
-        }
-        .mj-toggle.active .sub-text {
-            color: #fbbf24;
-        }
-
-        /* Header Transitions */
-        #mainHeader {
-            transition: padding 0.3s ease, border-radius 0.3s ease, box-shadow 0.3s ease;
-        }
-        #headerSubtitle, #headerDivider, #header-stats {
-            transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
-        }
-        #headerTitleWrapper {
-            transition: transform 0.3s ease;
-        }
-
-        /* Search Suggestions Dropdown */
-        .suggestions-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            margin-top: 4px;
-            z-index: 50;
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #f3f4f6;
-        }
-        .suggestion-item {
-            padding: 10px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid #f9fafb;
-            font-size: 0.95rem;
-            color: #374151;
-        }
-        .suggestion-item:hover {
-            background-color: #fdfbf7;
-            color: #8a1c28;
-        }
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-        .highlight-match {
-            color: #8a1c28;
-            font-weight: bold;
-        }
     </style>
 </head>
-<body class="text-gray-800 antialiased pb-24">
+<body class="text-gray-800 antialiased h-screen flex flex-col overflow-hidden">
 
     <div class="floral-bg"></div>
-    <div class="watermark-bg"></div>
     <div class="content-overlay"></div>
+    <!-- 浮水印背景 -->
+    <div class="watermark-bg">Shirley & Oscar</div>
 
-    <!-- Header (Fixed) -->
-    <header id="mainHeader" class="fixed top-0 left-0 w-full bg-gradient-to-br from-wedding-red to-wedding-darkRed text-white pt-10 pb-8 px-6 rounded-b-[2.5rem] shadow-xl z-[60] overflow-hidden">
-        <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/black-linen.png');"></div>
+    <!-- Main Scroll Container -->
+    <div class="flex-1 overflow-y-auto no-scrollbar relative z-20 pb-24" id="mainScrollContainer">
         
-        <div class="relative z-10 flex flex-col items-center">
-            <!-- Subtitle -->
-            <div id="headerSubtitle" class="max-h-10 opacity-100 mb-2 overflow-hidden">
-                 <h2 class="text-wedding-gold text-xs font-bold tracking-[0.3em] uppercase opacity-90 text-center">Wedding Reception</h2>
-            </div>
-
-            <!-- Title -->
-            <div id="headerTitleWrapper" class="transform origin-center">
-                <h1 class="text-5xl font-cursive text-white drop-shadow-lg transform -rotate-2 whitespace-nowrap">Shirley & Oscar</h1>
-            </div>
+        <!-- Header -->
+        <header class="bg-gradient-to-br from-wedding-red to-wedding-darkRed text-white pt-10 pb-8 px-6 rounded-b-[2.5rem] shadow-xl relative z-30 shrink-0 overflow-hidden mb-4">
+            <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/black-linen.png');"></div>
             
-            <!-- Divider -->
-            <div id="headerDivider" class="w-16 h-0.5 bg-wedding-gold/50 rounded-full mt-2 max-h-1 opacity-100"></div>
-
-            <!-- Stats (Only visible in Guests tab, toggled by JS) -->
-            <div id="header-stats" class="w-full mt-8 max-h-[100px] opacity-100 overflow-hidden flex justify-between items-end transition-all duration-300">
-                <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar w-full mr-4">
-                    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[85px] border border-white/10 shadow-lg text-center">
-                        <div class="text-[10px] text-gray-300 mb-1 uppercase tracking-wide">總人數</div>
-                        <div class="text-xl font-bold" id="totalHeadcount">0</div>
-                    </div>
-                    <div class="bg-green-900/40 backdrop-blur-md rounded-2xl p-3 min-w-[85px] border border-green-400/30 shadow-lg text-center">
-                        <div class="text-[10px] text-green-200 mb-1 uppercase tracking-wide">已簽到</div>
-                        <div class="text-xl font-bold text-green-300" id="checkedInCount">0</div>
-                    </div>
-                    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[85px] border border-white/10 shadow-lg text-center">
-                        <div class="text-[10px] text-gray-300 mb-1 uppercase tracking-wide">未到</div>
-                        <div class="text-xl font-bold text-wedding-gold" id="pendingCount">0</div>
-                    </div>
+            <div class="relative z-10">
+                <div class="flex flex-col items-center justify-center mb-8 text-center">
+                    <h2 class="text-wedding-gold text-xs font-bold tracking-[0.3em] uppercase mb-2 opacity-90">Wedding Reception</h2>
+                    <h1 class="text-5xl font-cursive text-white mb-2 drop-shadow-lg transform -rotate-2">Shirley & Oscar</h1>
+                    <div class="w-16 h-0.5 bg-wedding-gold/50 rounded-full mt-2"></div>
                 </div>
 
-                <div class="relative w-14 h-14 flex items-center justify-center shrink-0 mb-2">
-                    <svg class="transform -rotate-90 w-14 h-14">
-                        <circle cx="28" cy="28" r="24" stroke="currentColor" stroke-width="3" fill="transparent" class="text-white/10" />
-                        <circle id="progressCircle" cx="28" cy="28" r="24" stroke="#c5a059" stroke-width="3" fill="transparent" stroke-dasharray="150.7" stroke-dashoffset="150.7" class="transition-all duration-1000 ease-out" />
-                    </svg>
-                    <span class="absolute text-[11px] font-bold" id="progressText">0%</span>
+                <!-- Stats -->
+                <div id="header-stats" class="flex justify-between items-end">
+                    <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar w-full mr-4">
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[85px] border border-white/10 shadow-lg text-center">
+                            <div class="text-[10px] text-gray-300 mb-1 uppercase tracking-wide">總人數</div>
+                            <div class="text-xl font-bold" id="totalHeadcount">0</div>
+                        </div>
+                        <div class="bg-green-900/40 backdrop-blur-md rounded-2xl p-3 min-w-[85px] border border-green-400/30 shadow-lg text-center">
+                            <div class="text-[10px] text-green-200 mb-1 uppercase tracking-wide">已簽到</div>
+                            <div class="text-xl font-bold text-green-300" id="checkedInCount">0</div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 min-w-[85px] border border-white/10 shadow-lg text-center">
+                            <div class="text-[10px] text-gray-300 mb-1 uppercase tracking-wide">未到</div>
+                            <div class="text-xl font-bold text-wedding-gold" id="pendingCount">0</div>
+                        </div>
+                    </div>
+
+                    <div class="relative w-14 h-14 flex items-center justify-center shrink-0 mb-2">
+                        <svg class="transform -rotate-90 w-14 h-14">
+                            <circle cx="28" cy="28" r="24" stroke="currentColor" stroke-width="3" fill="transparent" class="text-white/10" />
+                            <circle id="progressCircle" cx="28" cy="28" r="24" stroke="#c5a059" stroke-width="3" fill="transparent" stroke-dasharray="150.7" stroke-dashoffset="150.7" class="transition-all duration-1000 ease-out" />
+                        </svg>
+                        <span class="absolute text-[11px] font-bold" id="progressText">0%</span>
+                    </div>
                 </div>
             </div>
-        </div>
-    </header>
-
-    <!-- Spacer to push content down from fixed header. Initial height set to prevent search bar jump. -->
-    <div id="headerSpacer" class="transition-all duration-300" style="height: 280px;"></div>
-
-    <!-- Main Content -->
-    <div class="relative z-20" id="mainScrollContainer">
+        </header>
         
-        <!-- TAB 1: 賓客名單 -->
-        <main id="tab-guests" class="px-4 py-6">
-            <!-- Search Bar Wrapper -->
-            <div class="relative bg-white rounded-2xl shadow-card p-4 mb-6 sticky top-[80px] z-50 ring-1 ring-gray-100/50 transition-all duration-300" id="searchBar">
-                <div class="flex items-center gap-3">
-                    <div class="bg-gray-50 rounded-full w-10 h-10 flex items-center justify-center text-wedding-red/50 shrink-0">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <div class="relative w-full h-full">
-                         <input type="text" id="searchInput" placeholder="搜尋賓客姓名..." autocomplete="off" class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400 font-medium h-full">
-                    </div>
-                    <button onclick="clearSearch()" id="clearSearchBtn" class="hidden text-gray-400 p-2"><i class="fas fa-times"></i></button>
+        <!-- TAB 1: 賓客名單 (GUESTS) -->
+        <main id="tab-guests" class="px-4 pb-6">
+            <!-- Search -->
+            <div class="bg-white rounded-2xl shadow-card p-4 mb-6 flex items-center gap-3 sticky top-4 z-30 ring-1 ring-gray-100/50">
+                <div class="bg-gray-50 rounded-full w-10 h-10 flex items-center justify-center text-wedding-red/50 shrink-0">
+                    <i class="fas fa-search"></i>
                 </div>
-                <!-- Suggestions Dropdown Container -->
-                <div id="searchSuggestions" class="suggestions-dropdown hidden"></div>
+                <input type="text" id="searchInput" placeholder="搜尋賓客姓名..." class="bg-transparent w-full outline-none text-gray-700 placeholder-gray-400 font-medium h-full">
+                <button onclick="clearSearch()" id="clearSearchBtn" class="hidden text-gray-400 p-2"><i class="fas fa-times"></i></button>
             </div>
-            
             <div id="tablesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </main>
 
-        <!-- TAB 2: 聯絡資訊 -->
-        <main id="tab-contacts" class="hidden px-4 py-6">
+        <!-- TAB 2: 聯絡資訊 (CONTACTS) -->
+        <main id="tab-contacts" class="hidden px-4 pb-6">
             <h2 class="text-xl font-bold text-wedding-red mb-4 pl-2 border-l-4 border-wedding-gold">工作人員通訊錄</h2>
             <div class="grid gap-4" id="contactsContainer"></div>
         </main>
 
-        <!-- TAB 3: 婚禮流程 -->
-        <main id="tab-timeline" class="hidden px-4 py-6">
+        <!-- TAB 3: 婚禮流程 (TIMELINE) -->
+        <main id="tab-timeline" class="hidden px-4 pb-6">
             <h2 class="text-xl font-bold text-wedding-red mb-6 pl-2 border-l-4 border-wedding-gold">婚禮當日流程</h2>
             <p class="text-xs text-gray-400 mb-4 pl-2">日期: JAN 04</p>
+            
             <div class="bg-white rounded-3xl p-6 shadow-card relative overflow-hidden">
                 <div class="timeline-line"></div>
-                <div id="timelineContainer"></div>
+                <div id="timelineContainer">
+                    <!-- JS Populated -->
+                </div>
             </div>
         </main>
 
-        <!-- TAB 4: 車牌系統 -->
-        <main id="tab-parking" class="hidden px-4 py-6">
+        <!-- TAB 4: 車牌系統 (PARKING) -->
+        <main id="tab-parking" class="hidden px-4 pb-6">
              <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-wedding-red pl-2 border-l-4 border-wedding-gold">工作人員車牌</h2>
                 <button onclick="openCarModal()" class="text-sm bg-wedding-red text-white px-4 py-2 rounded-full shadow-lg shadow-wedding-red/30 active:scale-95 transition-transform flex items-center">
                     <i class="fas fa-plus mr-1"></i> 新增
                 </button>
             </div>
-            <div id="carList" class="space-y-3"></div>
+            
+            <div id="carList" class="space-y-3">
+                <!-- JS Populated -->
+            </div>
         </main>
 
-        <!-- TAB 6: 麻雀計番 -->
-        <!-- Added extra padding at bottom (pb-32) to prevent accidental scrolls -->
-        <main id="tab-mahjong" class="hidden px-4 py-6 pb-40">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-wedding-red pl-2 border-l-4 border-wedding-gold">廣東麻雀計番</h2>
-            </div>
-
-            <!-- Total Score Display -->
-            <div class="bg-gradient-to-br from-wedding-red to-wedding-darkRed rounded-3xl p-6 text-white shadow-xl mb-6 flex flex-col items-center justify-center relative overflow-hidden">
-                <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/black-linen.png');"></div>
-                <div class="absolute -right-4 -top-4 text-white/10 text-8xl transform rotate-12">
-                    <i class="fas fa-dice"></i>
-                </div>
-                <div class="relative z-10 text-center w-full">
-                    <div class="text-sm text-wedding-gold font-bold uppercase tracking-widest mb-1">Total Fan</div>
-                    <div class="text-7xl font-bold" id="totalFanDisplay">0</div>
-                    <div class="text-sm opacity-80 mt-2 mb-6 font-medium">番</div>
-                    
-                    <!-- Reset Button Inside Card -->
-                    <button onclick="resetMahjong()" class="text-xs bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-6 py-2 rounded-full font-bold transition-all active:scale-95 mx-auto flex items-center justify-center gap-2">
-                        <i class="fas fa-redo-alt"></i> 重置歸零
-                    </button>
-                </div>
-            </div>
-
-            <!-- Counters -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
-                <h3 class="text-sm font-bold text-gray-400 uppercase mb-3">底分 / 累計</h3>
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-gray-700">花牌 (隻數)</span>
-                        <div class="flex items-center gap-3">
-                            <button onclick="updateMjCount('flower', -1)" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200"><i class="fas fa-minus"></i></button>
-                            <span class="font-bold text-xl w-6 text-center" id="mj-flower-count">0</span>
-                            <button onclick="updateMjCount('flower', 1)" class="w-8 h-8 rounded-full bg-wedding-red text-white flex items-center justify-center shadow-lg shadow-wedding-red/30"><i class="fas fa-plus"></i></button>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-gray-700">風牌/箭牌 (刻子)</span>
-                        <div class="flex items-center gap-3">
-                            <button onclick="updateMjCount('honor', -1)" class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200"><i class="fas fa-minus"></i></button>
-                            <span class="font-bold text-xl w-6 text-center" id="mj-honor-count">0</span>
-                            <button onclick="updateMjCount('honor', 1)" class="w-8 h-8 rounded-full bg-wedding-red text-white flex items-center justify-center shadow-lg shadow-wedding-red/30"><i class="fas fa-plus"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Toggles Grid -->
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <!-- 1 Fan -->
-                <button onclick="toggleMjFan(this, 1)" class="mj-toggle bg-white border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95">
-                    <span class="font-bold text-lg">自摸</span>
-                    <span class="text-[10px] text-gray-400 sub-text">+1番</span>
-                </button>
-                <button onclick="toggleMjFan(this, 1)" class="mj-toggle bg-white border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95">
-                    <span class="font-bold text-lg">無花</span>
-                    <span class="text-[10px] text-gray-400 sub-text">+1番</span>
-                </button>
-                <button onclick="toggleMjFan(this, 1)" class="mj-toggle bg-white border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95">
-                    <span class="font-bold text-lg">門前清</span>
-                    <span class="text-[10px] text-gray-400 sub-text">+1番</span>
-                </button>
-                <button onclick="toggleMjFan(this, 1)" class="mj-toggle bg-white border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95">
-                    <span class="font-bold text-lg">平胡</span>
-                    <span class="text-[10px] text-gray-400 sub-text">+1番</span>
-                </button>
-
-                <!-- 3 Fan -->
-                <button onclick="toggleMjFan(this, 3)" class="mj-toggle bg-white border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95">
-                    <span class="font-bold text-lg">對對糊</span>
-                    <span class="text-[10px] text-gray-400 sub-text">+3番</span>
-                </button>
-                <button onclick="toggleMjFan(this, 3)" class="mj-toggle bg-white border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95">
-                    <span class="font-bold text-lg">混一色</span>
-                    <span class="text-[10px] text-gray-400 sub-text">+3番</span>
-                </button>
-
-                <!-- High Fan -->
-                <button onclick="toggleMjFan(this, 5)" class="mj-toggle bg-white border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95">
-                    <span class="font-bold text-lg">小三元</span>
-                    <span class="text-[10px] text-gray-400 sub-text">+5番</span>
-                </button>
-                <button onclick="toggleMjFan(this, 7)" class="mj-toggle bg-white border border-gray-200 p-3 rounded-xl flex flex-col items-center justify-center transition-all active:scale-95">
-                    <span class="font-bold text-lg">清一色</span>
-                    <span class="text-[10px] text-gray-400 sub-text">+7番</span>
-                </button>
-            </div>
-             <p class="text-center text-xs text-gray-400">祝大家旗開得勝！🧧</p>
-        </main>
-
-        <!-- TAB 5: 資訊 -->
-        <!-- Added extra padding at bottom (pb-32) -->
-        <main id="tab-info" class="hidden px-4 py-6 pb-40">
+        <!-- TAB 5: 資訊 (INFO - Weather & AI) -->
+        <main id="tab-info" class="hidden px-4 pb-6">
              <!-- 天氣 Widget -->
             <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl p-6 text-white shadow-lg mb-8 relative overflow-hidden">
                 <div class="absolute top-[-20px] right-[-20px] text-white/20 text-9xl">
@@ -456,40 +306,36 @@
         </main>
     </div>
 
-    <!-- Bottom Navigation Bar (Fixed - Added Mahjong) -->
-    <nav class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-lg border-t border-gray-200 pb-safe pt-1 px-1 flex justify-around items-center z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] h-[80px]">
-        <button onclick="switchTab('guests')" class="nav-item active flex-1 min-w-0 flex flex-col items-center justify-center h-full text-gray-400 transition-all duration-300">
-            <i class="fas fa-users text-lg mb-1"></i>
-            <span class="text-[9px] font-bold">賓客</span>
+    <!-- Bottom Navigation Bar (5 Items) -->
+    <nav class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-lg border-t border-gray-200 pb-safe pt-1 px-2 flex justify-around items-center z-40 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] h-[80px]">
+        <button onclick="switchTab('guests')" class="nav-item active flex flex-col items-center justify-center w-14 h-full text-gray-400 transition-all duration-300">
+            <i class="fas fa-users text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">賓客</span>
         </button>
         
-        <button onclick="switchTab('contacts')" class="nav-item flex-1 min-w-0 flex flex-col items-center justify-center h-full text-gray-400 transition-all duration-300">
-            <i class="fas fa-address-book text-lg mb-1"></i>
-            <span class="text-[9px] font-bold">聯絡</span>
+        <button onclick="switchTab('contacts')" class="nav-item flex flex-col items-center justify-center w-14 h-full text-gray-400 transition-all duration-300">
+            <i class="fas fa-address-book text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">聯絡</span>
         </button>
 
-        <button onclick="switchTab('timeline')" class="nav-item flex-1 min-w-0 flex flex-col items-center justify-center h-full text-gray-400 transition-all duration-300">
-            <i class="fas fa-clock text-lg mb-1"></i>
-            <span class="text-[9px] font-bold">流程</span>
+        <button onclick="switchTab('timeline')" class="nav-item flex flex-col items-center justify-center w-14 h-full text-gray-400 transition-all duration-300">
+            <i class="fas fa-clock text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">流程</span>
         </button>
 
-        <button onclick="switchTab('parking')" class="nav-item flex-1 min-w-0 flex flex-col items-center justify-center h-full text-gray-400 transition-all duration-300">
-            <i class="fas fa-car text-lg mb-1"></i>
-            <span class="text-[9px] font-bold">車牌</span>
+        <button onclick="switchTab('parking')" class="nav-item flex flex-col items-center justify-center w-14 h-full text-gray-400 transition-all duration-300">
+            <i class="fas fa-car text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">車牌</span>
         </button>
 
-        <button onclick="switchTab('mahjong')" class="nav-item flex-1 min-w-0 flex flex-col items-center justify-center h-full text-gray-400 transition-all duration-300">
-            <i class="fas fa-dice text-lg mb-1"></i>
-            <span class="text-[9px] font-bold">麻雀</span>
-        </button>
-
-        <button onclick="switchTab('info')" class="nav-item flex-1 min-w-0 flex flex-col items-center justify-center h-full text-gray-400 transition-all duration-300">
-            <i class="fas fa-info-circle text-lg mb-1"></i>
-            <span class="text-[9px] font-bold">資訊</span>
+        <button onclick="switchTab('info')" class="nav-item flex flex-col items-center justify-center w-14 h-full text-gray-400 transition-all duration-300">
+            <i class="fas fa-info-circle text-xl mb-1"></i>
+            <span class="text-[10px] font-bold">資訊</span>
         </button>
     </nav>
 
-    <!-- MODALS (Existing Modals) -->
+    <!-- MODALS -->
+
     <!-- 1. Check-in Modal -->
     <div id="checkInModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-6 opacity-0 transition-opacity duration-300">
         <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 relative flex flex-col" id="checkInContent">
@@ -507,6 +353,8 @@
             <div class="pt-12 pb-8 px-6 text-center flex-1 flex flex-col">
                 <h2 class="text-2xl font-bold text-gray-800 mb-1" id="modalGuestName">Guest Name</h2>
                 <p class="text-sm text-gray-500 mb-4 font-medium" id="modalGuestTable">Table X</p>
+                
+                <!-- 未領喜帖提示 -->
                 <div id="noInvitationAlert" class="hidden mb-4 bg-red-50 border-l-4 border-wedding-red rounded-r-xl p-4 shadow-sm animate-pulse">
                     <div class="flex flex-col items-center justify-center text-wedding-red">
                         <div class="flex items-center gap-2 mb-2">
@@ -519,12 +367,15 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 已領喜帖標籤 -->
                 <div id="hasInvitationBadge" class="hidden mb-6">
                     <div class="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold text-sm border border-green-200 shadow-sm">
                         <i class="fas fa-check-circle text-green-600"></i>
                         <span>已領取喜帖</span>
                     </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-3 mb-8">
                     <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
                         <div class="text-xs text-gray-400 uppercase font-bold tracking-wider">人數</div>
@@ -557,7 +408,7 @@
                         <input type="text" id="carPlate" required class="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-gray-800 font-bold focus:ring-2 focus:ring-wedding-gold/50" placeholder="例如: WN3564">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">預計停泊時間 (非必填)</label>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">預計停泊時間 <span class="text-gray-300 normal-case">(非必填)</span></label>
                         <input type="text" id="carTime" class="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-gray-800 font-medium focus:ring-2 focus:ring-wedding-gold/50" placeholder="例如: 14:00 - 23:00">
                     </div>
                 </div>
@@ -602,27 +453,31 @@
             19: { title: "男家朋友", color: "blue" }
         };
 
-        // Guest List - Updated with new data
+        // Guest List - STRICTLY following your updated request from PDF (7)
+        // hasInvitation: true (Blue text), false (Black text)
+        // Checked against your text list of "已收到"
         let rawGuests = [
-            // Table 1
+            // Table 1 (主家席)
             { name: "新郎媽媽", tableId: 1, hasInvitation: true },
             { name: "新郎姨丈(+新郎姨媽,新郎表哥,新郎表姐)", tableId: 1, manualSize: 4, hasInvitation: false },
             { name: "吳生(Mr Roger Ng)+吳太(Ms Amy Leung)", tableId: 1, manualSize: 2, hasInvitation: true },
-            { name: "新郎表姨(Shirley Hui)(+表姨丈)", tableId: 1, manualSize: 2, hasInvitation: false },
+            { name: "新郎表姨(Shirley Hui) (+表姨丈)", tableId: 1, manualSize: 2, hasInvitation: false },
             { name: "新郎大舅父 (Steven Hui) (+舅母)", tableId: 1, manualSize: 2, hasInvitation: false },
             { name: "新郎舅父(Stanley Hui) (+舅母)", tableId: 1, manualSize: 2, hasInvitation: false },
             { name: "胡生(+許小姐+胡超文)", tableId: 1, manualSize: 3, hasInvitation: false },
             { name: "永高老叔(+老嬸)", tableId: 1, manualSize: 2, hasInvitation: true },
             { name: "新郎", tableId: 1, hasInvitation: true },
             { name: "新娘", tableId: 1, hasInvitation: true },
-            // Table 2
+            
+            // Table 2 (男家長輩 - Updated names)
             { name: "文昭舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false },
             { name: "炯强舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false },
-            { name: "耀滨舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false },
-            { name: "基茂舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false },
+            { name: "耀滨舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false }, // Updated
+            { name: "基茂舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false }, // Updated (+舅母) from PDF 7
             { name: "盛少英(+林先生)", tableId: 2, manualSize: 2, hasInvitation: false },
-            { name: "劉建文叔叔(+劉太)", tableId: 2, manualSize: 2, hasInvitation: false },
-            // Table 3
+            { name: "劉建文叔叔(+劉太)", tableId: 2, manualSize: 2, hasInvitation: false }, // Updated name
+
+            // Table 3 (女家長輩 - All true)
             { name: "新娘爸爸", tableId: 3, hasInvitation: true }, 
             { name: "新娘媽媽", tableId: 3, hasInvitation: true }, 
             { name: "新娘嫲嫲", tableId: 3, hasInvitation: true },
@@ -631,95 +486,109 @@
             { name: "麗兒姨婆", tableId: 3, hasInvitation: true }, { name: "燕兒姨婆", tableId: 3, hasInvitation: true }, 
             { name: "天虹姑婆", tableId: 3, hasInvitation: true }, { name: "曉虹姑婆", tableId: 3, hasInvitation: true }, 
             { name: "區清姨婆", tableId: 3, hasInvitation: true }, { name: "梅冰姨公", tableId: 3, hasInvitation: true },
-            // Table 5
+
+            // Table 5 (女家親戚)
             { name: "徐偉舅舅", tableId: 5, hasInvitation: false }, { name: "Reiki", tableId: 5, hasInvitation: false }, 
-            { name: "毓麗姑婆全家(+5位)", tableId: 5, manualSize: 6, hasInvitation: false },
+            { name: "毓麗姑婆全家(+5位)", tableId: 5, manualSize: 6, hasInvitation: false }, // Updated name
             { name: "王向紅", tableId: 5, hasInvitation: false }, 
             { name: "吳承菊", tableId: 5, hasInvitation: false }, 
             { name: "吳起恕", tableId: 5, hasInvitation: false },
-            // Table 6
+
+            // Table 6 (男家朋友)
             { name: "綺華", tableId: 6, hasInvitation: false }, { name: "錦鑾", tableId: 6, hasInvitation: false }, 
             { name: "佩華", tableId: 6, hasInvitation: false }, { name: "淑華", tableId: 6, hasInvitation: false }, 
             { name: "宋吟", tableId: 6, hasInvitation: false }, { name: "燕芬", tableId: 6, hasInvitation: false },
             { name: "玉娥", tableId: 6, hasInvitation: false }, { name: "姚晴萱", tableId: 6, hasInvitation: false }, 
             { name: "姚澤彬", tableId: 6, hasInvitation: false }, { name: "劉子鈞(+3位)", tableId: 6, manualSize: 4, hasInvitation: false },
-            // Table 7
+
+            // Table 7 (男家朋友)
+            // Updated list from PDF 7 + user text
             { name: "吳总", tableId: 7, hasInvitation: false }, { name: "Carly Ng", tableId: 7, hasInvitation: false }, 
             { name: "徐生", tableId: 7, hasInvitation: false }, { name: "Stephanus (+4)", tableId: 7, manualSize: 5, hasInvitation: false },
-            { name: "Roberto (+1)", tableId: 7, manualSize: 2, hasInvitation: false },
             { name: "徐總", tableId: 7, hasInvitation: true }, 
             { name: "Jimmy", tableId: 7, hasInvitation: true },
-            // Table 8
+            { name: "Miyuki Sze", tableId: 7, hasInvitation: false }, // New from PDF 7
+            { name: "Lala Wong", tableId: 7, hasInvitation: false }, // New from PDF 7
+
+            // Table 8 (女家親戚)
             { name: "梅士平叔叔", tableId: 8, hasInvitation: false }, { name: "燕華嬸嬸", tableId: 8, hasInvitation: false }, 
-            { name: "玫 姑姐", tableId: 8, hasInvitation: false }, { name: "海歐叔叔", tableId: 8, hasInvitation: false }, 
+            { name: "玟鏵姑姐", tableId: 8, hasInvitation: false }, { name: "海歐叔叔", tableId: 8, hasInvitation: false }, 
             { name: "黃沛瑜", tableId: 8, hasInvitation: false }, 
-            { name: "黃海揚(+1位)", tableId: 8, manualSize: 2, hasInvitation: false }, 
+            { name: "黃海洋(+1位)", tableId: 8, manualSize: 2, hasInvitation: false }, 
             { name: "斌毅舅舅全家(+2位)", tableId: 8, manualSize: 3, hasInvitation: false }, 
             { name: "Alex Wong", tableId: 8, hasInvitation: false }, { name: "Jack Wong", tableId: 8, hasInvitation: false },
-            // Table 9
+
+            // Table 9 (女家朋友)
             { name: "Leila", tableId: 9, hasInvitation: false }, { name: "Ana", tableId: 9, hasInvitation: false }, 
             { name: "Gavin", tableId: 9, hasInvitation: false }, { name: "Davina", tableId: 9, hasInvitation: false }, 
-            { name: "Lemon", tableId: 9, hasInvitation: false },
+            { name: "Catherine", tableId: 9, hasInvitation: false }, { name: "Lemon", tableId: 9, hasInvitation: false },
             { name: "Nora", tableId: 9, hasInvitation: false }, { name: "Brian", tableId: 9, hasInvitation: false }, 
             { name: "Kiki", tableId: 9, hasInvitation: false }, { name: "Jorie", tableId: 9, hasInvitation: false }, 
             { name: "Yichen", tableId: 9, hasInvitation: false }, { name: "Katia", tableId: 9, hasInvitation: false },
-            // Table 10
+
+            // Table 10 (男家朋友 - Only 陳凱偉 true)
             { name: "大眼仔2", tableId: 10, manualSize: 2, hasInvitation: false }, 
             { name: "Ng Ming Kin(+3位)", tableId: 10, manualSize: 4, hasInvitation: false }, 
             { name: "Sunkist Sit", tableId: 10, hasInvitation: false },
             { name: "陳凱偉", tableId: 10, hasInvitation: true }, 
             { name: "黃國翹(+1位)", tableId: 10, manualSize: 2, hasInvitation: false }, 
             { name: "方齊發(+1位)", tableId: 10, manualSize: 2, hasInvitation: false },
-            // Table 11
+
+            // Table 11 (男家朋友 - Sammi, Crystal, Michelle, Joe Lo true)
             { name: "Sammi", tableId: 11, hasInvitation: true }, { name: "Crystal", tableId: 11, hasInvitation: true }, 
             { name: "Michelle", tableId: 11, hasInvitation: true }, { name: "Joe Lo", tableId: 11, hasInvitation: true }, 
             { name: "Winky Chau", tableId: 11, hasInvitation: false }, 
             { name: "鄭國鏘(+3位)", tableId: 11, manualSize: 4, hasInvitation: false },
             { name: "Kathy Keh", tableId: 11, hasInvitation: false }, { name: "Kayleen Keh", tableId: 11, hasInvitation: false }, 
-            { name: "Miyuki Sze", tableId: 11, hasInvitation: false },
-            // Table 12
+            { name: "Miyuki sze", tableId: 11, hasInvitation: false },
+
+            // Table 12 (女家朋友)
             { name: "Phoebe", tableId: 12, hasInvitation: false }, { name: "Tingting", tableId: 12, hasInvitation: false }, 
             { name: "Darren", tableId: 12, hasInvitation: false }, { name: "Chris", tableId: 12, hasInvitation: false }, 
             { name: "Siann", tableId: 12, hasInvitation: false }, { name: "Miror", tableId: 12, hasInvitation: false },
             { name: "KC", tableId: 12, hasInvitation: false }, { name: "Brian", tableId: 12, hasInvitation: false }, 
             { name: "Wilson", tableId: 12, hasInvitation: false }, { name: "Andy", tableId: 12, hasInvitation: false }, 
-            { name: "Shermen", tableId: 12, hasInvitation: false }, { name: "justin", tableId: 12, hasInvitation: false },
-            // Table 13
+            { name: "Anthony", tableId: 12, hasInvitation: false }, { name: "justin", tableId: 12, hasInvitation: false },
+
+            // Table 13 (女家朋友)
             { name: "Kelly(+3位)", tableId: 13, manualSize: 4, hasInvitation: false }, 
             { name: "Lancy", tableId: 13, hasInvitation: false }, { name: "Betty", tableId: 13, hasInvitation: false }, 
             { name: "Lauren (+1位)", tableId: 13, manualSize: 2, hasInvitation: false }, 
             { name: "Linda Pak (+2位)", tableId: 13, manualSize: 3, hasInvitation: false },
-            // Table 15
+
+            // Table 15 (男家朋友 - Specified True)
             { name: "Jason Wong", tableId: 15, hasInvitation: true }, { name: "Wiliam Wong", tableId: 15, hasInvitation: true }, 
             { name: "James Lo", tableId: 15, hasInvitation: true }, { name: "Nik Po", tableId: 15, hasInvitation: true }, 
             { name: "林霞", tableId: 15, hasInvitation: true }, { name: "凌生", tableId: 15, hasInvitation: true },
-            { name: "何生", tableId: 15, hasInvitation: true }, { name: "張天永", tableId: 15, hasInvitation: false }, 
+            { name: "張天永", tableId: 15, hasInvitation: false }, 
             { name: "林生(2位)", tableId: 15, manualSize: 2, hasInvitation: true }, 
             { name: "劉总", tableId: 15, hasInvitation: true },
-            { name: "Sanda Tsang", tableId: 15, hasInvitation: true },
-            // Table 16
+            { name: "Sanda Tsang", tableId: 15, hasInvitation: true }, { name: "Lala", tableId: 15, hasInvitation: true },
+
+            // Table 16 (男家朋友 - Rannie Yu True)
             { name: "暢(兒子)", tableId: 16, hasInvitation: false }, { name: "葉堡琛", tableId: 16, hasInvitation: false }, 
             { name: "劉子軒(3位)", tableId: 16, manualSize: 3, hasInvitation: false },
             { name: "林綺婷", tableId: 16, hasInvitation: false }, { name: "朱岸南", tableId: 16, hasInvitation: false }, 
             { name: "Dicky Cheung", tableId: 16, hasInvitation: false }, { name: "Karen Law", tableId: 16, hasInvitation: false }, 
-            { name: "范嘉俊", tableId: 16, hasInvitation: false }, { name: "Rannie Yu", tableId: 16, hasInvitation: true }, 
-            { name: "Lala", tableId: 16, hasInvitation: true },
-            // Table 17
+            { name: "范嘉俊", tableId: 16, hasInvitation: false }, { name: "任旭陽", tableId: 16, hasInvitation: false },
+            { name: "Rannie Yu", tableId: 16, hasInvitation: true }, 
+
+            // Table 17 (女家朋友)
             { name: "Denise", tableId: 17, hasInvitation: false }, { name: "Leo", tableId: 17, hasInvitation: false }, 
             { name: "Gloria", tableId: 17, hasInvitation: false }, { name: "Mackie", tableId: 17, hasInvitation: false }, 
             { name: "Brina", tableId: 17, hasInvitation: false }, { name: "Ashley", tableId: 17, hasInvitation: false },
             { name: "Shiiko", tableId: 17, hasInvitation: false }, { name: "Jaye", tableId: 17, hasInvitation: false }, 
             { name: "Cheryl", tableId: 17, hasInvitation: false }, { name: "Betsy", tableId: 17, hasInvitation: false }, 
             { name: "Joe", tableId: 17, hasInvitation: false }, { name: "Pakki", tableId: 17, hasInvitation: false },
-            // Table 18
-            { name: "Anthony", tableId: 18, hasInvitation: false }, { name: "Crystal", tableId: 18, hasInvitation: false }, 
-            { name: "Ada", tableId: 18, hasInvitation: false }, 
+
+            // Table 18 (男家朋友)
+            { name: "Crystal", tableId: 18, hasInvitation: false }, { name: "Ada", tableId: 18, hasInvitation: false }, 
             { name: "Angel", tableId: 18, hasInvitation: false }, { name: "Celia", tableId: 18, hasInvitation: false }, 
             { name: "Siu Yuk", tableId: 18, hasInvitation: false }, { name: "Momoco", tableId: 18, hasInvitation: false },
             { name: "Alison", tableId: 18, hasInvitation: false }, { name: "陳嘉安", tableId: 18, hasInvitation: false }, 
             { name: "John", tableId: 18, hasInvitation: false }, { name: "Or fu", tableId: 18, hasInvitation: false },
-            { name: "Jason", tableId: 18, hasInvitation: false },
-            // Table 19
+
+            // Table 19 (男家朋友 - All true)
             { name: "Kelvin Li", tableId: 19, hasInvitation: true }, { name: "Matt", tableId: 19, hasInvitation: true }, 
             { name: "Hayley", tableId: 19, hasInvitation: true }, { name: "Ivy", tableId: 19, hasInvitation: true }, 
             { name: "Ting fung", tableId: 19, hasInvitation: true }, { name: "Roxanne", tableId: 19, hasInvitation: true },
@@ -749,7 +618,7 @@
             { owner: "Scott", plate: "YM4955", time: "全日" }
         ];
 
-        // Timeline Data
+        // Updated Wedding Timeline Data from CSV
         const timelineData = [
             { time: "05:00:00", event: "Make up get ready", location: "" },
             { time: "06:00:00", event: "髮型師上房", location: "" },
@@ -772,13 +641,6 @@
         let carData = [];
         let currentGuestId = null;
 
-        // Mahjong State
-        let mjState = {
-            flower: 0,
-            honor: 0,
-            fan: 0
-        };
-
         document.addEventListener('DOMContentLoaded', () => {
             initGuests();
             initContacts();
@@ -786,15 +648,6 @@
             initTimeline();
             renderApp();
             setupSearch();
-            setupScrollEffect();
-            updateSpacerHeight();
-            
-            // Force an initial update to layout to handle fixed header spacing properly on load
-            // This ensures the sticky search bar and content aren't hidden behind the header
-            setTimeout(() => {
-                window.dispatchEvent(new Event('scroll'));
-                updateSpacerHeight();
-            }, 100);
         });
 
         // --- Init Functions ---
@@ -905,6 +758,7 @@
                 
                 let headerBg, borderColor, titleColor, subTitle, iconBg, iconColor;
 
+                // Color Logic
                 if (info.color === "gold") {
                     headerBg = 'bg-gradient-to-r from-wedding-gold/20 to-white';
                     titleColor = 'text-[#856404]';
@@ -987,128 +841,34 @@
 
         function renderCarList() {
             const list = document.getElementById('carList');
-            // Remove delete button from template
             list.innerHTML = carData.map((car, index) => `
                 <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center group">
                     <div>
                         <div class="font-bold text-gray-800">${car.owner} <span class="text-wedding-red ml-2 bg-wedding-pink px-2 rounded text-xs">${car.plate}</span></div>
                         <div class="text-xs text-gray-500 mt-1"><i class="far fa-clock mr-1"></i> ${car.time || '全日'}</div>
                     </div>
-                    <!-- Delete button removed -->
+                    <!-- Delete button removed as requested -->
                 </div>
             `).join('');
         }
 
         // --- Interaction Logic ---
         function switchTab(tabName) {
-            ['guests', 'contacts', 'timeline', 'parking', 'info', 'mahjong'].forEach(t => {
-                const el = document.getElementById(`tab-${t}`);
-                if(el) el.classList.add('hidden');
+            ['guests', 'contacts', 'timeline', 'parking', 'info'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
             });
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
             
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'text-wedding-red'));
             const activeBtn = document.querySelector(`.nav-item[onclick="switchTab('${tabName}')"]`);
-            if(activeBtn) activeBtn.classList.add('active', 'text-wedding-red');
+            activeBtn.classList.add('active', 'text-wedding-red');
+            document.getElementById('mainScrollContainer').scrollTop = 0;
             
-            // Scroll to top
-            window.scrollTo(0,0);
-            
-            // Re-eval header state after tab switch
-            // Use setTimeout to allow DOM to update visibility
-            setTimeout(() => {
-                updateSpacerHeight();
-                // Manually trigger scroll event logic to set correct state
-                window.dispatchEvent(new Event('scroll'));
-            }, 50);
-        }
-        
-        // --- Sticky Header Logic ---
-        function setupScrollEffect() {
-            window.addEventListener('scroll', () => {
-                const header = document.getElementById('mainHeader');
-                const subtitle = document.getElementById('headerSubtitle');
-                const divider = document.getElementById('headerDivider');
-                const stats = document.getElementById('header-stats');
-                const titleWrapper = document.getElementById('headerTitleWrapper');
-                const searchBar = document.getElementById('searchBar');
-                
-                // Change Logic: If ANY scroll (not at very top), keep shrunk. Only expand at EXACT top.
-                if (window.scrollY > 0) {
-                    // Shrink State
-                    header.classList.remove('pt-10', 'pb-8', 'rounded-b-[2.5rem]');
-                    header.classList.add('pt-3', 'pb-3', 'rounded-b-3xl', 'shadow-2xl');
-                    
-                    // Hide Subtitle
-                    subtitle.classList.replace('max-h-10', 'max-h-0');
-                    subtitle.classList.replace('opacity-100', 'opacity-0');
-                    subtitle.classList.replace('mb-2', 'mb-0');
-                    
-                    // Hide Divider
-                    divider.classList.replace('max-h-1', 'max-h-0');
-                    divider.classList.replace('opacity-100', 'opacity-0');
-                    divider.classList.replace('mt-2', 'mt-0');
-
-                    // Scale Title Down
-                    titleWrapper.classList.add('scale-75');
-                    
-                    // Hide Stats regardless of tab
-                    stats.classList.replace('max-h-[100px]', 'max-h-0');
-                    stats.classList.replace('opacity-100', 'opacity-0');
-                    stats.classList.replace('mt-8', 'mt-0');
-                    
-                    // Adjust sticky search bar position if visible
-                    if(searchBar) {
-                        // Header height is roughly 80-90px when shrunk. 
-                        // Set top to allow it to stick right below header.
-                        // Safe value: 75px
-                        searchBar.style.top = '75px'; 
-                    }
-                    
-                } else {
-                    // Expanded State (Only when at absolute top)
-                    header.classList.add('pt-10', 'pb-8', 'rounded-b-[2.5rem]');
-                    header.classList.remove('pt-3', 'pb-3', 'rounded-b-3xl', 'shadow-2xl');
-
-                    // Show Subtitle
-                    subtitle.classList.replace('max-h-0', 'max-h-10');
-                    subtitle.classList.replace('opacity-0', 'opacity-100');
-                    subtitle.classList.replace('mb-0', 'mb-2');
-
-                    // Show Divider
-                    divider.classList.replace('max-h-0', 'max-h-1');
-                    divider.classList.replace('opacity-0', 'opacity-100');
-                    divider.classList.replace('mt-0', 'mt-2');
-
-                    // Reset Title Scale
-                    titleWrapper.classList.remove('scale-75');
-
-                    // Show Stats only if on Guests Tab
-                    const isGuestTab = !document.getElementById('tab-guests').classList.contains('hidden');
-                    if (isGuestTab) {
-                        stats.classList.replace('max-h-0', 'max-h-[100px]');
-                        stats.classList.replace('opacity-0', 'opacity-100');
-                        stats.classList.replace('mt-0', 'mt-8');
-                    } else {
-                        // Keep stats hidden if not on guest tab
-                        stats.classList.replace('max-h-[100px]', 'max-h-0');
-                        stats.classList.replace('opacity-100', 'opacity-0');
-                        stats.classList.replace('mt-8', 'mt-0');
-                    }
-                    
-                    // Reset sticky search bar position
-                    if(searchBar) {
-                         searchBar.style.top = '75px'; 
-                    }
-                }
-            });
-        }
-        
-        function updateSpacerHeight() {
-            const header = document.getElementById('mainHeader');
-            const spacer = document.getElementById('headerSpacer');
-            if(window.scrollY < 10) {
-                 spacer.style.height = header.offsetHeight + 'px';
+            // Show/Hide header stats
+            if(tabName === 'guests') {
+                document.getElementById('header-stats').classList.remove('hidden');
+            } else {
+                document.getElementById('header-stats').classList.add('hidden');
             }
         }
 
@@ -1129,6 +889,7 @@
             invitationCheck.checked = false;
 
             if (guest.checkedIn) {
+                // 已簽到：隱藏提示，顯示取消按鈕
                 noInvitationAlert.classList.add('hidden');
                 hasInvitationBadge.classList.add('hidden');
                 checkInBtn.disabled = false;
@@ -1136,11 +897,13 @@
                 updateCheckInBtnUI(true);
             } else {
                 if (guest.hasInvitation) {
+                    // 已領喜帖 (藍色字)：顯示綠色標籤，不需勾選，按鈕可用
                     noInvitationAlert.classList.add('hidden');
                     hasInvitationBadge.classList.remove('hidden');
                     checkInBtn.disabled = false;
                     checkInBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 } else {
+                    // 未領喜帖 (黑色字)：顯示紅色提示+Checkbox，按鈕禁用
                     noInvitationAlert.classList.remove('hidden');
                     hasInvitationBadge.classList.add('hidden');
                     checkInBtn.disabled = true;
@@ -1221,13 +984,7 @@
             closeModal('carModal');
         }
 
-        function viewImage(type) {
-            const modal = document.getElementById('imageModal');
-            const img = document.getElementById('fullImage');
-            img.src = "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=2070&auto=format&fit=crop"; 
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
+        // 刪除功能已移除
 
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
@@ -1245,51 +1002,14 @@
             }, 300);
         }
 
-        // --- Mahjong Logic ---
-        function updateMjCount(type, val) {
-            if (type === 'flower') {
-                mjState.flower = Math.max(0, Math.min(8, mjState.flower + val));
-                document.getElementById('mj-flower-count').innerText = mjState.flower;
-            } else if (type === 'honor') {
-                mjState.honor = Math.max(0, Math.min(8, mjState.honor + val));
-                document.getElementById('mj-honor-count').innerText = mjState.honor;
-            }
-            calcMjTotal();
-        }
-
-        function toggleMjFan(btn, fanValue) {
-            btn.classList.toggle('active');
-            calcMjTotal();
-        }
-
-        function calcMjTotal() {
-            let total = 0;
-            // Add counters
-            total += mjState.flower;
-            total += mjState.honor;
-
-            // Add active toggles
-            const activeBtns = document.querySelectorAll('.mj-toggle.active');
-            activeBtns.forEach(btn => {
-                const subText = btn.querySelector('.sub-text').innerText;
-                const fan = parseInt(subText.replace('+', '').replace('番', ''));
-                total += fan;
-            });
-
-            document.getElementById('totalFanDisplay').innerText = total;
-            animateValue('totalFanDisplay', parseInt(document.getElementById('totalFanDisplay').innerText), total, 300);
-        }
-
-        function resetMahjong() {
-            mjState = { flower: 0, honor: 0, fan: 0 };
-            document.getElementById('mj-flower-count').innerText = 0;
-            document.getElementById('mj-honor-count').innerText = 0;
-            document.querySelectorAll('.mj-toggle').forEach(btn => btn.classList.remove('active'));
-            calcMjTotal();
-        }
-
-
         // --- AI Features (Simulated) ---
+        async function aiSearchAssist() {
+            const input = document.getElementById('searchInput');
+            const query = input.value;
+            if (!query) return alert("請先輸入一些關鍵字，例如「新郎同學」");
+            alert(`[AI 助手] 正在為您搜尋符合 "${query}" 特徵的賓客...\n(此為演示功能)`);
+        }
+
         async function sendToGemini() {
             const input = document.getElementById('aiInput');
             const userText = input.value;
@@ -1344,73 +1064,17 @@
         function setupSearch() {
             const input = document.getElementById('searchInput');
             const btn = document.getElementById('clearSearchBtn');
-            const suggestionsBox = document.getElementById('searchSuggestions');
-            
-            // Search Input Event
             input.addEventListener('input', (e) => {
-                const val = e.target.value.toLowerCase().trim();
-                
-                // Toggle Clear Button
-                if(val) btn.classList.remove('hidden');
+                if(e.target.value) btn.classList.remove('hidden');
                 else btn.classList.add('hidden');
-                
-                // Filter Tables
                 renderTables();
-
-                // Suggestions Logic
-                if (val.length > 0) {
-                    const matches = guests.filter(g => g.name.toLowerCase().includes(val)).slice(0, 8); // Max 8 suggestions
-                    if (matches.length > 0) {
-                        suggestionsBox.innerHTML = matches.map(g => {
-                            const matchIndex = g.name.toLowerCase().indexOf(val);
-                            const pre = g.name.substring(0, matchIndex);
-                            const match = g.name.substring(matchIndex, matchIndex + val.length);
-                            const post = g.name.substring(matchIndex + val.length);
-                            
-                            return `
-                                <div class="suggestion-item" onclick="selectSuggestion('${g.name}')">
-                                    <span class="text-gray-400 mr-2 text-xs"><i class="fas fa-user"></i></span>
-                                    ${pre}<span class="highlight-match">${match}</span>${post}
-                                    <span class="text-xs text-gray-400 ml-2">(第 ${g.tableId} 桌)</span>
-                                </div>
-                            `;
-                        }).join('');
-                        suggestionsBox.classList.remove('hidden');
-                    } else {
-                        suggestionsBox.classList.add('hidden');
-                    }
-                } else {
-                    suggestionsBox.classList.add('hidden');
-                }
             });
-
-            // Hide suggestions when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!document.getElementById('searchBar').contains(e.target)) {
-                    suggestionsBox.classList.add('hidden');
-                }
-            });
-            
-            // Focus on input shows suggestions if value exists
-            input.addEventListener('focus', () => {
-                if(input.value.trim().length > 0) {
-                     input.dispatchEvent(new Event('input'));
-                }
-            });
-        }
-        
-        function selectSuggestion(name) {
-            const input = document.getElementById('searchInput');
-            input.value = name;
-            document.getElementById('searchSuggestions').classList.add('hidden');
-            renderTables();
         }
 
         function clearSearch() {
             const input = document.getElementById('searchInput');
             input.value = '';
             document.getElementById('clearSearchBtn').classList.add('hidden');
-            document.getElementById('searchSuggestions').classList.add('hidden');
             renderTables();
         }
     </script>
