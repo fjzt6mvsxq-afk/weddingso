@@ -453,9 +453,7 @@
             19: { title: "男家朋友", color: "blue" }
         };
 
-        // Guest List - STRICTLY following your updated request from PDF (7)
-        // hasInvitation: true (Blue text), false (Black text)
-        // Checked against your text list of "已收到"
+        // Guest List - STRICTLY updated from PDF (8) and user instructions
         let rawGuests = [
             // Table 1 (主家席)
             { name: "新郎媽媽", tableId: 1, hasInvitation: true },
@@ -469,13 +467,13 @@
             { name: "新郎", tableId: 1, hasInvitation: true },
             { name: "新娘", tableId: 1, hasInvitation: true },
             
-            // Table 2 (男家長輩 - Updated names)
+            // Table 2 (男家長輩 - PDF 8 updated names)
             { name: "文昭舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false },
             { name: "炯强舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false },
-            { name: "耀滨舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false }, // Updated
-            { name: "基茂舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false }, // Updated (+舅母) from PDF 7
+            { name: "耀滨舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false }, 
+            { name: "基茂舅舅(+舅母)", tableId: 2, manualSize: 2, hasInvitation: false }, 
             { name: "盛少英(+林先生)", tableId: 2, manualSize: 2, hasInvitation: false },
-            { name: "劉建文叔叔(+劉太)", tableId: 2, manualSize: 2, hasInvitation: false }, // Updated name
+            { name: "劉建文叔叔(+劉太)", tableId: 2, manualSize: 2, hasInvitation: false }, 
 
             // Table 3 (女家長輩 - All true)
             { name: "新娘爸爸", tableId: 3, hasInvitation: true }, 
@@ -487,9 +485,9 @@
             { name: "天虹姑婆", tableId: 3, hasInvitation: true }, { name: "曉虹姑婆", tableId: 3, hasInvitation: true }, 
             { name: "區清姨婆", tableId: 3, hasInvitation: true }, { name: "梅冰姨公", tableId: 3, hasInvitation: true },
 
-            // Table 5 (女家親戚)
+            // Table 5 (女家親戚 - PDF 8)
             { name: "徐偉舅舅", tableId: 5, hasInvitation: false }, { name: "Reiki", tableId: 5, hasInvitation: false }, 
-            { name: "毓麗姑婆全家(+5位)", tableId: 5, manualSize: 6, hasInvitation: false }, // Updated name
+            { name: "毓麗姑婆全家(+5位)", tableId: 5, manualSize: 6, hasInvitation: false },
             { name: "王向紅", tableId: 5, hasInvitation: false }, 
             { name: "吳承菊", tableId: 5, hasInvitation: false }, 
             { name: "吳起恕", tableId: 5, hasInvitation: false },
@@ -501,46 +499,49 @@
             { name: "玉娥", tableId: 6, hasInvitation: false }, { name: "姚晴萱", tableId: 6, hasInvitation: false }, 
             { name: "姚澤彬", tableId: 6, hasInvitation: false }, { name: "劉子鈞(+3位)", tableId: 6, manualSize: 4, hasInvitation: false },
 
-            // Table 7 (男家朋友)
-            // Updated list from PDF 7 + user text
+            // Table 7 (男家朋友 - PDF 8)
             { name: "吳总", tableId: 7, hasInvitation: false }, { name: "Carly Ng", tableId: 7, hasInvitation: false }, 
             { name: "徐生", tableId: 7, hasInvitation: false }, { name: "Stephanus (+4)", tableId: 7, manualSize: 5, hasInvitation: false },
             { name: "徐總", tableId: 7, hasInvitation: true }, 
-            { name: "Jimmy", tableId: 7, hasInvitation: true },
-            { name: "Miyuki Sze", tableId: 7, hasInvitation: false }, // New from PDF 7
-            { name: "Lala Wong", tableId: 7, hasInvitation: false }, // New from PDF 7
+            { name: "Jimmy", tableId: 7, hasInvitation: true }, // Jimmy removed per request? Wait, user said "Table 7 Jimmy del". Removing Jimmy.
+            // RE-CHECK: User said "Table 7 Jimmy del". So Jimmy is GONE.
+            // { name: "Jimmy", tableId: 7, hasInvitation: true }, <--- DELETED
+            { name: "Miyuki Sze", tableId: 7, hasInvitation: false }, 
+            { name: "Lala Wong", tableId: 7, hasInvitation: false }, 
 
-            // Table 8 (女家親戚)
+            // Table 8 (女家親戚 - PDF 8)
             { name: "梅士平叔叔", tableId: 8, hasInvitation: false }, { name: "燕華嬸嬸", tableId: 8, hasInvitation: false }, 
             { name: "玟鏵姑姐", tableId: 8, hasInvitation: false }, { name: "海歐叔叔", tableId: 8, hasInvitation: false }, 
             { name: "黃沛瑜", tableId: 8, hasInvitation: false }, 
-            { name: "黃海洋(+1位)", tableId: 8, manualSize: 2, hasInvitation: false }, 
+            { name: "黃海揚(+1位)", tableId: 8, manualSize: 2, hasInvitation: false }, 
             { name: "斌毅舅舅全家(+2位)", tableId: 8, manualSize: 3, hasInvitation: false }, 
             { name: "Alex Wong", tableId: 8, hasInvitation: false }, { name: "Jack Wong", tableId: 8, hasInvitation: false },
 
             // Table 9 (女家朋友)
             { name: "Leila", tableId: 9, hasInvitation: false }, { name: "Ana", tableId: 9, hasInvitation: false }, 
             { name: "Gavin", tableId: 9, hasInvitation: false }, { name: "Davina", tableId: 9, hasInvitation: false }, 
-            { name: "Catherine", tableId: 9, hasInvitation: false }, { name: "Lemon", tableId: 9, hasInvitation: false },
+            { name: "Lemon", tableId: 9, hasInvitation: false },
             { name: "Nora", tableId: 9, hasInvitation: false }, { name: "Brian", tableId: 9, hasInvitation: false }, 
             { name: "Kiki", tableId: 9, hasInvitation: false }, { name: "Jorie", tableId: 9, hasInvitation: false }, 
             { name: "Yichen", tableId: 9, hasInvitation: false }, { name: "Katia", tableId: 9, hasInvitation: false },
+            { name: "Catherine", tableId: 9, hasInvitation: false }, // PDF 8 added Catherine back
 
-            // Table 10 (男家朋友 - Only 陳凱偉 true)
-            { name: "大眼仔2", tableId: 10, manualSize: 2, hasInvitation: false }, 
+            // Table 10 (男家朋友)
+            { name: "林建敏(+1位)", tableId: 10, manualSize: 2, hasInvitation: false }, // PDF 8 updated
             { name: "Ng Ming Kin(+3位)", tableId: 10, manualSize: 4, hasInvitation: false }, 
             { name: "Sunkist Sit", tableId: 10, hasInvitation: false },
             { name: "陳凱偉", tableId: 10, hasInvitation: true }, 
             { name: "黃國翹(+1位)", tableId: 10, manualSize: 2, hasInvitation: false }, 
             { name: "方齊發(+1位)", tableId: 10, manualSize: 2, hasInvitation: false },
 
-            // Table 11 (男家朋友 - Sammi, Crystal, Michelle, Joe Lo true)
+            // Table 11 (男家朋友 - PDF 8 updated)
             { name: "Sammi", tableId: 11, hasInvitation: true }, { name: "Crystal", tableId: 11, hasInvitation: true }, 
-            { name: "Michelle", tableId: 11, hasInvitation: true }, { name: "Joe Lo", tableId: 11, hasInvitation: true }, 
-            { name: "Winky Chau", tableId: 11, hasInvitation: false }, 
+            { name: "Michelle", tableId: 11, hasInvitation: true }, 
             { name: "鄭國鏘(+3位)", tableId: 11, manualSize: 4, hasInvitation: false },
             { name: "Kathy Keh", tableId: 11, hasInvitation: false }, { name: "Kayleen Keh", tableId: 11, hasInvitation: false }, 
-            { name: "Miyuki sze", tableId: 11, hasInvitation: false },
+            { name: "林綺婷", tableId: 11, hasInvitation: false }, // PDF 8 added
+            { name: "Joe Lo", tableId: 11, hasInvitation: true }, 
+            { name: "Winky Chau", tableId: 11, hasInvitation: false }, 
 
             // Table 12 (女家朋友)
             { name: "Phoebe", tableId: 12, hasInvitation: false }, { name: "Tingting", tableId: 12, hasInvitation: false }, 
@@ -548,7 +549,8 @@
             { name: "Siann", tableId: 12, hasInvitation: false }, { name: "Miror", tableId: 12, hasInvitation: false },
             { name: "KC", tableId: 12, hasInvitation: false }, { name: "Brian", tableId: 12, hasInvitation: false }, 
             { name: "Wilson", tableId: 12, hasInvitation: false }, { name: "Andy", tableId: 12, hasInvitation: false }, 
-            { name: "Anthony", tableId: 12, hasInvitation: false }, { name: "justin", tableId: 12, hasInvitation: false },
+            { name: "Sherman", tableId: 12, hasInvitation: false }, // PDF 8 updated (Sherman instead of Anthony?)
+            { name: "Justin", tableId: 12, hasInvitation: false }, 
 
             // Table 13 (女家朋友)
             { name: "Kelly(+3位)", tableId: 13, manualSize: 4, hasInvitation: false }, 
@@ -560,18 +562,22 @@
             { name: "Jason Wong", tableId: 15, hasInvitation: true }, { name: "Wiliam Wong", tableId: 15, hasInvitation: true }, 
             { name: "James Lo", tableId: 15, hasInvitation: true }, { name: "Nik Po", tableId: 15, hasInvitation: true }, 
             { name: "林霞", tableId: 15, hasInvitation: true }, { name: "凌生", tableId: 15, hasInvitation: true },
+            { name: "何生", tableId: 15, hasInvitation: false }, // PDF 8 added
             { name: "張天永", tableId: 15, hasInvitation: false }, 
             { name: "林生(2位)", tableId: 15, manualSize: 2, hasInvitation: true }, 
             { name: "劉总", tableId: 15, hasInvitation: true },
-            { name: "Sanda Tsang", tableId: 15, hasInvitation: true }, { name: "Lala", tableId: 15, hasInvitation: true },
+            { name: "Sanda Tsang", tableId: 15, hasInvitation: true }, 
+            // Lala moved to Table 7 in PDF 8 list, so removed here
 
-            // Table 16 (男家朋友 - Rannie Yu True)
-            { name: "暢(兒子)", tableId: 16, hasInvitation: false }, { name: "葉堡琛", tableId: 16, hasInvitation: false }, 
-            { name: "劉子軒(3位)", tableId: 16, manualSize: 3, hasInvitation: false },
-            { name: "林綺婷", tableId: 16, hasInvitation: false }, { name: "朱岸南", tableId: 16, hasInvitation: false }, 
-            { name: "Dicky Cheung", tableId: 16, hasInvitation: false }, { name: "Karen Law", tableId: 16, hasInvitation: false }, 
-            { name: "范嘉俊", tableId: 16, hasInvitation: false }, { name: "任旭陽", tableId: 16, hasInvitation: false },
+            // Table 16 (男家朋友 - Rannie Yu True, 任旭陽 REMOVED)
+            { name: "刘于暢", tableId: 16, hasInvitation: false }, // PDF 8 name update
+            { name: "葉堡琛", tableId: 16, hasInvitation: false }, 
+            { name: "劉子軒(+2位)", tableId: 16, manualSize: 3, hasInvitation: false }, // PDF 8 updated size description
+            { name: "朱岸南", tableId: 16, hasInvitation: false }, 
+            { name: "范嘉俊", tableId: 16, hasInvitation: false }, 
             { name: "Rannie Yu", tableId: 16, hasInvitation: true }, 
+            { name: "Dicky Cheung", tableId: 16, hasInvitation: false }, // Moved here in PDF 8
+            { name: "Karen Law", tableId: 16, hasInvitation: false }, // Moved here in PDF 8
 
             // Table 17 (女家朋友)
             { name: "Denise", tableId: 17, hasInvitation: false }, { name: "Leo", tableId: 17, hasInvitation: false }, 
@@ -581,16 +587,19 @@
             { name: "Cheryl", tableId: 17, hasInvitation: false }, { name: "Betsy", tableId: 17, hasInvitation: false }, 
             { name: "Joe", tableId: 17, hasInvitation: false }, { name: "Pakki", tableId: 17, hasInvitation: false },
 
-            // Table 18 (男家朋友)
+            // Table 18 (男家朋友 - PDF 8 updated)
+            { name: "Anthony", tableId: 18, hasInvitation: false }, // Moved here in PDF 8
             { name: "Crystal", tableId: 18, hasInvitation: false }, { name: "Ada", tableId: 18, hasInvitation: false }, 
             { name: "Angel", tableId: 18, hasInvitation: false }, { name: "Celia", tableId: 18, hasInvitation: false }, 
             { name: "Siu Yuk", tableId: 18, hasInvitation: false }, { name: "Momoco", tableId: 18, hasInvitation: false },
             { name: "Alison", tableId: 18, hasInvitation: false }, { name: "陳嘉安", tableId: 18, hasInvitation: false }, 
             { name: "John", tableId: 18, hasInvitation: false }, { name: "Or fu", tableId: 18, hasInvitation: false },
+            { name: "Jason", tableId: 18, hasInvitation: false }, // PDF 8 added
 
             // Table 19 (男家朋友 - All true)
             { name: "Kelvin Li", tableId: 19, hasInvitation: true }, { name: "Matt", tableId: 19, hasInvitation: true }, 
-            { name: "Hayley", tableId: 19, hasInvitation: true }, { name: "Ivy", tableId: 19, hasInvitation: true }, 
+            { name: "Raymond", tableId: 19, hasInvitation: false }, // PDF 8 added (not in "invited" list, so false)
+            { name: "Ivy", tableId: 19, hasInvitation: true }, 
             { name: "Ting fung", tableId: 19, hasInvitation: true }, { name: "Roxanne", tableId: 19, hasInvitation: true },
             { name: "Gigi", tableId: 19, hasInvitation: true }, { name: "Bonnie", tableId: 19, hasInvitation: true }, 
             { name: "Vicky", tableId: 19, hasInvitation: true }, { name: "Moon", tableId: 19, hasInvitation: true }, 
@@ -618,7 +627,7 @@
             { owner: "Scott", plate: "YM4955", time: "全日" }
         ];
 
-        // Updated Wedding Timeline Data from CSV
+        // Timeline Data
         const timelineData = [
             { time: "05:00:00", event: "Make up get ready", location: "" },
             { time: "06:00:00", event: "髮型師上房", location: "" },
